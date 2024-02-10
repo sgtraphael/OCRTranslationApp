@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, StyleSheet} from 'react-native'
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView} from 'react-native'
 import {Picker} from '@react-native-picker/picker'
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
@@ -10,6 +10,7 @@ const TextExtraction = () => {
     const [texts, setTexts] = useState("");
     const [targetLanguage, setTargetLanguage] = useState("");
     const [shouldTranslate, setShouldTranslate] = useState(false);
+    const [translatedText, setTranslatedText] = useState("");
 
     const pickImage = async () => {
         try {
@@ -44,7 +45,8 @@ const TextExtraction = () => {
                 const apiResponse = await axios.post(apiURL, requestData);
                 console.log("translation: ", apiResponse.data.data.translations);
                 console.log("translated text: ", apiResponse.data.data.translations[0].translatedText);
-                setTexts(apiResponse.data.data.translations[0].translatedText)
+                // setTexts(apiResponse.data.data.translations[0].translatedText)
+                setTranslatedText(apiResponse.data.data.translations[0].translatedText);
           } catch (error) {
             console.error('Error translating text: ', error);
             alert('Error translating text. Please try again later');
@@ -103,99 +105,191 @@ const TextExtraction = () => {
     };
 
 
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        Google Cloud Vision API Text Detection Demo
-      </Text>
-      {imageUri && (
-        <Image
-            source = {{uri: imageUri}}
-            style = {{width: 300, height: 300}} 
-        />
-      )}
-      <TouchableOpacity 
-        onPress={pickImage}
-        style={styles.button}
-      >
-        <Text style={styles.text}>Choose an image</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={analyzeImage}
-        style={styles.button}
-      >
-        <Text style={styles.text}>Analyze image</Text>
-      </TouchableOpacity>
-      <Picker
+    return (
+        <ScrollView contentContainerStyle={styles.container}>
+          <Text style={styles.title}>Google Cloud Vision API Text Detection Demo</Text>
+          
+          {imageUri && (
+            <Image source={{ uri: imageUri }} style={styles.image} />
+          )}
+    
+          <TouchableOpacity onPress={pickImage} style={styles.button}>
+            <Text style={styles.buttonText}>Choose an image</Text>
+          </TouchableOpacity>
+    
+          <TouchableOpacity onPress={analyzeImage} style={styles.button}>
+            <Text style={styles.buttonText}>Analyze image</Text>
+          </TouchableOpacity>
+    
+          <Picker
             selectedValue={targetLanguage}
             style={styles.picker}
             onValueChange={(itemValue, itemIndex) => setTargetLanguage(itemValue)}
-        >
+          >
             <Picker.Item label="Select target language" value="" />
             <Picker.Item label="Spanish" value="es" />
             <Picker.Item label="French" value="fr" />
             <Picker.Item label="German" value="de" />
             {/* Add more languages as needed */}
-        </Picker>
-      {
-        texts.length > 0 && (
-            <View>
-                <Text style = {styles.label}>
-                    Result: {texts}
-                </Text>
-                {
-                    // texts.map((text) => (
-                    //     <Text
-                    //         key={text.mid}
-                    //         style={styles.outputText}
-                    //     >
-                    //         {text.description}
-                    //     </Text> 
-                    // ))
-                }
+          </Picker>
+    
+          {texts.length > 0 && (
+            <View style={styles.resultContainer}>
+              <Text style={styles.label}>Extracted Text:</Text>
+              <Text style={styles.text}>{texts}</Text>
+    
+              {translatedText && (
+                <>
+                  <Text style={styles.label}>Translated Text:</Text>
+                  <Text style={styles.text}>{translatedText}</Text>
+                </>
+              )}
             </View>
-        )
-      }
-    </View>
-  )
+          )}
+        </ScrollView>
+      );
+//   return (
+//     <View style={styles.container}>
+//       <Text style={styles.title}>
+//         Google Cloud Vision API Text Detection Demo
+//       </Text>
+//       {imageUri && (
+//         <Image
+//             source = {{uri: imageUri}}
+//             style = {{width: 300, height: 300}} 
+//         />
+//       )}
+//       <TouchableOpacity 
+//         onPress={pickImage}
+//         style={styles.button}
+//       >
+//         <Text style={styles.text}>Choose an image</Text>
+//       </TouchableOpacity>
+//       <TouchableOpacity
+//         onPress={analyzeImage}
+//         style={styles.button}
+//       >
+//         <Text style={styles.text}>Analyze image</Text>
+//       </TouchableOpacity>
+//       <Picker
+//             selectedValue={targetLanguage}
+//             style={styles.picker}
+//             onValueChange={(itemValue, itemIndex) => setTargetLanguage(itemValue)}
+//         >
+//             <Picker.Item label="Select target language" value="" />
+//             <Picker.Item label="Spanish" value="es" />
+//             <Picker.Item label="French" value="fr" />
+//             <Picker.Item label="German" value="de" />
+//             {/* Add more languages as needed */}
+//         </Picker>
+//       {
+//         texts.length > 0 && (
+//             <View>
+//                 <Text style = {styles.label}>
+//                     Result: {texts}
+//                 </Text>
+//                 {
+//                     // texts.map((text) => (
+//                     //     <Text
+//                     //         key={text.mid}
+//                     //         style={styles.outputText}
+//                     //     >
+//                     //         {text.description}
+//                     //     </Text> 
+//                     // ))
+//                 }
+//             </View>
+//         )
+//       }
+//     </View>
+//   )
 }
 
 export default TextExtraction
-
 const styles = StyleSheet.create({
     container: {
-      flex: 1,
+      flexGrow: 1,
       backgroundColor: '#fff',
-      //alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: 'center',
+      paddingVertical: 40,
+      paddingHorizontal: 20,
     },
     title: {
-        fontSize: 30,
-        fontWeight: 'bold',
-        marginBottom: 50,
-        marginTop: 100,
-
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginBottom: 30,
+      textAlign: 'center',
     },
-    button:{
-        backgroundColor: 'DDDDDD',
-        padding: 10,
-        marginBottom: 10,
-        marginTop: 20,
-
+    image: {
+      width: 300,
+      height: 300,
+      marginBottom: 20,
     },
-    text:{
-        fontSize: 20,
-        fontWeight: 'bold',
-
+    button: {
+      backgroundColor: '#DDDDDD',
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      marginBottom: 10,
+      borderRadius: 5,
     },
-    label:{
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginTop: 20,
+    buttonText: {
+      fontSize: 18,
+      fontWeight: 'bold',
     },
-    outputText: {
-        fontSize: 18,
-        marginBottom: 10,
-    }
+    picker: {
+      width: '100%',
+      marginBottom: 20,
+    },
+    resultContainer: {
+      marginTop: 20,
+      alignItems: 'center',
+    },
+    label: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+    },
+    text: {
+      fontSize: 16,
+      marginBottom: 20,
+      textAlign: 'center',
+    },
   });
+  
+
+// const styles = StyleSheet.create({
+//     container: {
+//       flex: 1,
+//       backgroundColor: '#fff',
+//       //alignItems: 'center',
+//       justifyContent: 'center',
+//     },
+//     title: {
+//         fontSize: 30,
+//         fontWeight: 'bold',
+//         marginBottom: 50,
+//         marginTop: 100,
+
+//     },
+//     button:{
+//         backgroundColor: 'DDDDDD',
+//         padding: 10,
+//         marginBottom: 10,
+//         marginTop: 20,
+
+//     },
+//     text:{
+//         fontSize: 20,
+//         fontWeight: 'bold',
+
+//     },
+//     label:{
+//         fontSize: 20,
+//         fontWeight: 'bold',
+//         marginTop: 20,
+//     },
+//     outputText: {
+//         fontSize: 18,
+//         marginBottom: 10,
+//     }
+//   });
