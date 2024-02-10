@@ -1,5 +1,6 @@
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, TouchableOpacity, Image, StyleSheet} from 'react-native'
+import {Picker} from '@react-native-picker/picker'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
@@ -7,6 +8,8 @@ import * as FileSystem from 'expo-file-system';
 const TextExtraction = () => {
     const [imageUri, setImageUri] = useState(null);
     const [texts, setTexts] = useState("");
+    const [targetLanguage, setTargetLanguage] = useState("");
+    const [shouldTranslate, setShouldTranslate] = useState(false);
 
     const pickImage = async () => {
         try {
@@ -25,6 +28,36 @@ const TextExtraction = () => {
             console.error('Error Picking Image: ', error);
         }
     };
+    useEffect(() => {
+        const translateText = async () => {
+          try {
+                const apiKey = "AIzaSyA60a6EUSAHZFh5GPwpb_KQ_ifUO5bBwtM";
+                const apiURL = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
+            
+                const requestData = {
+                q: texts,
+                source: "en",
+                target: targetLanguage, // Use the selected target language
+                format: "text"
+                }
+                console.log('pass to translate api:', texts);
+                const apiResponse = await axios.post(apiURL, requestData);
+                console.log("translation: ", apiResponse.data.data.translations);
+                console.log("translated text: ", apiResponse.data.data.translations[0].translatedText);
+                setTexts(apiResponse.data.data.translations[0].translatedText)
+          } catch (error) {
+            console.error('Error translating text: ', error);
+            alert('Error translating text. Please try again later');
+          }
+        };
+    
+        if (shouldTranslate && targetLanguage && texts) {
+          console.log('selected language', targetLanguage);
+          console.log('text in useEffect IF: ', texts);
+          translateText();
+          setShouldTranslate(false);
+        }
+      }, [shouldTranslate, texts, targetLanguage]);
 
     const analyzeImage = async () => {
         try{
@@ -53,15 +86,23 @@ const TextExtraction = () => {
             };
             const apiResponse = await axios.post(apiURL, requestData);
             setTexts(apiResponse.data.responses[0].textAnnotations[0].description);
-            console.log('response: ', apiResponse.data.responses[0]);
-            console.log('textAnnotation: ', apiResponse.data.responses[0].textAnnotations);
-            console.log('texts', texts);
+            // if(targetLanguage) {
+            //     console.log('selected language',  targetLanguage);
+            //     translateText();
+            // }
+            // console.log('response: ', apiResponse.data.responses[0]);
+            console.log('textAnnotation: ', apiResponse.data.responses[0].textAnnotations[0].description);
+            console.log("text extracted: ", texts);
+            setShouldTranslate(true);
+            //console.log('texts', texts);
 
         } catch(error){
             console.error('Error analyzing image: ', error);
             alert('Error analyzing image. Please try again later');
         }
     };
+
+
 
   return (
     <View style={styles.container}>
@@ -86,6 +127,17 @@ const TextExtraction = () => {
       >
         <Text style={styles.text}>Analyze image</Text>
       </TouchableOpacity>
+      <Picker
+            selectedValue={targetLanguage}
+            style={styles.picker}
+            onValueChange={(itemValue, itemIndex) => setTargetLanguage(itemValue)}
+        >
+            <Picker.Item label="Select target language" value="" />
+            <Picker.Item label="Spanish" value="es" />
+            <Picker.Item label="French" value="fr" />
+            <Picker.Item label="German" value="de" />
+            {/* Add more languages as needed */}
+        </Picker>
       {
         texts.length > 0 && (
             <View>
@@ -105,7 +157,6 @@ const TextExtraction = () => {
             </View>
         )
       }
-
     </View>
   )
 }
@@ -116,7 +167,7 @@ const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: '#fff',
-      alignItems: 'center',
+      //alignItems: 'center',
       justifyContent: 'center',
     },
     title: {
