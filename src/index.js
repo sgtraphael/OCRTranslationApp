@@ -29,6 +29,30 @@ const TextExtraction = () => {
             console.error('Error Picking Image: ', error);
         }
     };
+
+    const takePhoto = async () => {
+      try {
+          const permission = await ImagePicker.requestCameraPermissionsAsync();
+          if (permission.granted === false) {
+            alert("You've refused to allow this app to access your photos!");
+          } else {
+            let result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [4, 3],
+              quality: 1,
+            });
+      
+            if (!result.cancelled) {
+              setImageUri(result.uri);
+            }
+            console.log(result);
+          }
+      } catch (error) {
+        console.error('Error Taking Photo: ', error);
+      }
+    };
+    
     useEffect(() => {
         const translateText = async () => {
           try {
@@ -110,7 +134,9 @@ const TextExtraction = () => {
           {imageUri && (
             <Image source={{ uri: imageUri }} style={styles.image} />
           )}
-    
+          <TouchableOpacity onPress={takePhoto} style={styles.button}>
+            <Text style={styles.buttonText}>Take a photo</Text>   
+          </TouchableOpacity>
           <TouchableOpacity onPress={pickImage} style={styles.button}>
             <Text style={styles.buttonText}>Choose an image</Text>
           </TouchableOpacity>
