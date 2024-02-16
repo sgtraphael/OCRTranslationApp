@@ -37,9 +37,7 @@ const TextExtraction = () => {
             
                 const requestData = {
                 q: texts,
-                source: "en",
                 target: targetLanguage, // Use the selected target language
-                format: "text"
                 }
                 console.log('pass to translate api:', texts);
                 const apiResponse = await axios.post(apiURL, requestData);
