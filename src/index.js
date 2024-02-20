@@ -1,7 +1,8 @@
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView} from 'react-native'
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch} from 'react-native'
 import {Picker} from '@react-native-picker/picker'
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
+import TesseractOcr, { LANG_ENGLISH, LEVEL_WORD } from 'react-native-tesseract-ocr';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 
@@ -11,6 +12,10 @@ const TextExtraction = () => {
     const [targetLanguage, setTargetLanguage] = useState("");
     const [shouldTranslate, setShouldTranslate] = useState(false);
     const [translatedText, setTranslatedText] = useState("");
+    const [shouldUseTesseract, setShouldUseTesseract] = useState(false);
+    const toggleOCR = () => {
+      setShouldUseTesseract(!shouldUseTesseract);
+    };
 
     const pickImage = async () => {
         try {
@@ -89,32 +94,79 @@ const TextExtraction = () => {
                 alert('Please select an image first');
                 return;
             }
-            // Google Cloud Vision API Key
-            const apiKey = "AIzaSyA60a6EUSAHZFh5GPwpb_KQ_ifUO5bBwtM";
-            const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
+            
+            const GoogleCloudVisionApiAnalyze = async() => {
+              // Google Cloud Vision API Key
+              const apiKey = "AIzaSyA60a6EUSAHZFh5GPwpb_KQ_ifUO5bBwtM";
+              const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
 
-            //read image from local URI and convert to base64
-            const base64ImageData = await FileSystem.readAsStringAsync(imageUri, {
-                encoding: FileSystem.EncodingType.Base64,
-            });
+              //read image from local URI and convert to base64
+              const base64ImageData = await FileSystem.readAsStringAsync(imageUri, {
+                  encoding: FileSystem.EncodingType.Base64,
+              });
 
-            const requestData = {
-                requests: [
-                    {
-                        image: {
-                            content: base64ImageData,
-                        },
-                        features:{type: 'TEXT_DETECTION'},
-                    },
-                ],
+              const requestData = {
+                  requests: [
+                      {
+                          image: {
+                              content: base64ImageData,
+                          },
+                          features:{type: 'TEXT_DETECTION'},
+                      },
+                  ],
+              };
+              const apiResponse = await axios.post(apiURL, requestData);
+              const extractedText = apiResponse.data.responses[0].textAnnotations[0].description;
+              return extractedText;              
             };
-            const apiResponse = await axios.post(apiURL, requestData);
-            setTexts(apiResponse.data.responses[0].textAnnotations[0].description);
+            // Google Cloud Vision API Key
+            // const apiKey = "AIzaSyA60a6EUSAHZFh5GPwpb_KQ_ifUO5bBwtM";
+            // const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
+
+            // //read image from local URI and convert to base64
+            // const base64ImageData = await FileSystem.readAsStringAsync(imageUri, {
+            //     encoding: FileSystem.EncodingType.Base64,
+            // });
+
+            // const requestData = {
+            //     requests: [
+            //         {
+            //             image: {
+            //                 content: base64ImageData,
+            //             },
+            //             features:{type: 'TEXT_DETECTION'},
+            //         },
+            //     ],
+            // };
+            // const apiResponse = await axios.post(apiURL, requestData);
+            // setTexts(apiResponse.data.responses[0].textAnnotations[0].description);
             // if(targetLanguage) {
             //     console.log('selected language',  targetLanguage);
             //     translateText();
             // }
             // console.log('response: ', apiResponse.data.responses[0]);
+
+            //OCR using tesseract
+            const tesseractAnalyze = async () => {
+              const tessOptions = {};
+              const recognizedText = await TesseractOcr.recognize(
+                imageUri,
+                LANG_ENGLISH,
+                tessOptions,
+              );
+              return recognizedText;
+            };
+
+            let extractedText = '';
+
+            // Choose the OCR engine based on a condition
+            if (shouldUseTesseract) {
+              extractedText = await tesseractAnalyze();
+            } else {
+              extractedText = await googleCloudVisionApiAnalyze();
+            }
+        
+            setTexts(extractedText);
             console.log('textAnnotation: ', apiResponse.data.responses[0].textAnnotations[0].description);
             console.log("text extracted: ", texts);
             setShouldTranslate(true);
@@ -144,7 +196,13 @@ const TextExtraction = () => {
           <TouchableOpacity onPress={analyzeImage} style={styles.button}>
             <Text style={styles.buttonText}>Analyze image</Text>
           </TouchableOpacity>
-    
+          <View>
+            <Text>Use Tesseract OCR: {shouldUseTesseract ? 'Yes' : 'No'}</Text>
+            <Switch
+              value={shouldUseTesseract}
+              onValueChange={toggleOCR}
+            />
+          </View>
           <Picker
             selectedValue={targetLanguage}
             style={styles.picker}
