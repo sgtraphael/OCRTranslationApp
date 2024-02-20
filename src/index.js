@@ -163,11 +163,11 @@ const TextExtraction = () => {
             if (shouldUseTesseract) {
               extractedText = await tesseractAnalyze();
             } else {
-              extractedText = await googleCloudVisionApiAnalyze();
+              extractedText = await GoogleCloudVisionApiAnalyze();
             }
         
             setTexts(extractedText);
-            console.log('textAnnotation: ', apiResponse.data.responses[0].textAnnotations[0].description);
+            console.log('textAnnotation: ', extractedText);
             console.log("text extracted: ", texts);
             setShouldTranslate(true);
             //console.log('texts', texts);
