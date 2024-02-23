@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch} fr
 import {Picker} from '@react-native-picker/picker'
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
-import TesseractOcr, { LANG_ENGLISH, LEVEL_WORD } from 'react-native-tesseract-ocr';
+import TextRecognition from '@react-native-ml-kit/text-recognition';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 
@@ -149,10 +149,8 @@ const TextExtraction = () => {
             //OCR using tesseract
             const tesseractAnalyze = async () => {
               const tessOptions = {};
-              const recognizedText = await TesseractOcr.recognize(
-                imageUri,
-                LANG_ENGLISH,
-                tessOptions,
+              const recognizedText = await TextRecognition.recognize(
+                imageUri
               );
               return recognizedText;
             };

@@ -9,16 +9,17 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@react-native-picker/picker": "^2.6.1",
+    "@react-native-ml-kit/text-recognition": "^1.5.1",
+    "@react-native-picker/picker": "2.4.10",
     "axios": "^1.6.3",
     "expo": "~49.0.15",
+    "expo-camera": "~13.4.4",
     "expo-file-system": "~15.4.5",
     "expo-image-picker": "~14.3.2",
     "expo-status-bar": "~1.6.0",
     "react": "18.2.0",
-    "react-native": "0.73.4",
-    "react-native-tesseract-ocr": "^2.0.3",
-    "expo-camera": "~13.4.4"
+    "react-native": "0.72.10",
+    "expo-dev-client": "~2.4.13"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
