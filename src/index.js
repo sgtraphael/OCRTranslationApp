@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch} from 'react-native'
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch, Settings} from 'react-native'
 import {Picker} from '@react-native-picker/picker'
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
@@ -147,26 +147,30 @@ const TextExtraction = () => {
             // console.log('response: ', apiResponse.data.responses[0]);
 
             //OCR using tesseract
-            const tesseractAnalyze = async () => {
-              const tessOptions = {};
+            const mlAnalyze = async () => {
               const recognizedText = await TextRecognition.recognize(
                 imageUri
               );
               return recognizedText;
             };
 
-            let extractedText = '';
+            let extractedTextFromGoogle = '';
+            let extractedTextFromMl = [];
 
             // Choose the OCR engine based on a condition
             if (shouldUseTesseract) {
-              extractedText = await tesseractAnalyze();
+              extractedTextFromMl = await mlAnalyze();
+              const fullText = extractedTextFromMl.text;
+              console.log('full text',fullText);
+              setTexts(fullText);
             } else {
-              extractedText = await GoogleCloudVisionApiAnalyze();
+              extractedTextFromGoogle = await GoogleCloudVisionApiAnalyze();
+              setTexts(extractedTextFromGoogle);
             }
         
-            setTexts(extractedText);
-            console.log('textAnnotation: ', extractedText);
-            console.log("text extracted: ", texts);
+            // setTexts(extractedText);
+            // console.log('textAnnotation: ', extractedText);
+            // console.log("text extracted: ", texts);
             setShouldTranslate(true);
             //console.log('texts', texts);
 
