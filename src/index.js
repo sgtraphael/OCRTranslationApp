@@ -1,8 +1,9 @@
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch, Settings} from 'react-native'
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch, Settings, ActivityIndicator} from 'react-native'
 import {Picker} from '@react-native-picker/picker'
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
+import TranslateText, {TranslateLanguage} from '@react-native-ml-kit/translate-text';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 
@@ -13,6 +14,9 @@ const TextExtraction = () => {
     const [shouldTranslate, setShouldTranslate] = useState(false);
     const [translatedText, setTranslatedText] = useState("");
     const [shouldUseTesseract, setShouldUseTesseract] = useState(false);
+    const [sourceLanguage, setSourceLanguage] = useState("");
+    const [isTranslating, setIsTranslating] = useState(false);
+
     const toggleOCR = () => {
       setShouldUseTesseract(!shouldUseTesseract);
     };
@@ -61,32 +65,54 @@ const TextExtraction = () => {
     useEffect(() => {
         const translateText = async () => {
           try {
-                const apiKey = "AIzaSyA60a6EUSAHZFh5GPwpb_KQ_ifUO5bBwtM";
-                const apiURL = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
-            
-                const requestData = {
-                q: texts,
-                target: targetLanguage, // Use the selected target language
+                const GoogleCloudTranslate = async() => {
+                  const apiKey = "AIzaSyA60a6EUSAHZFh5GPwpb_KQ_ifUO5bBwtM";
+                  const apiURL = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
+              
+                  const requestData = {
+                  q: texts,
+                  target: targetLanguage, // Use the selected target language
+                  }
+                  console.log('pass to translate api:', texts);
+                  const apiResponse = await axios.post(apiURL, requestData);
+                  console.log("translation: ", apiResponse.data.data.translations);
+                  console.log("translated text: ", apiResponse.data.data.translations[0].translatedText);
+                  // setTexts(apiResponse.data.data.translations[0].translatedText)
+                  const translateResult = apiResponse.data.data.translations[0].translatedText;
+                  return translateResult;
+                  // setTranslatedText(apiResponse.data.data.translations[0].translatedText);
+                  
                 }
-                console.log('pass to translate api:', texts);
-                const apiResponse = await axios.post(apiURL, requestData);
-                console.log("translation: ", apiResponse.data.data.translations);
-                console.log("translated text: ", apiResponse.data.data.translations[0].translatedText);
-                // setTexts(apiResponse.data.data.translations[0].translatedText)
-                setTranslatedText(apiResponse.data.data.translations[0].translatedText);
+                const mlTranslate = async () => {
+                  const translateResult = await TranslateText.translate({text: texts, sourceLanguage: sourceLanguage, targetLanguage: targetLanguage,downloadModelIfNeeded: true});
+                  console.log("translated text: ", translateResult);
+                  return translateResult
+                }
+
+                setIsTranslating(true);
+                let translateResult = '';
+                if(shouldUseTesseract){
+                  translateResult = await mlTranslate(sourceLanguage);
+                  setTranslatedText(translateResult);
+                }else {
+                  translateResult = await GoogleCloudTranslate();
+                  setTranslatedText(translateResult);
+                }
+                setIsTranslating(false);
           } catch (error) {
+            setIsTranslating(false);
             console.error('Error translating text: ', error);
             alert('Error translating text. Please try again later');
           }
         };
-    
-        if (shouldTranslate && targetLanguage && texts) {
+
+        if (shouldTranslate && targetLanguage && texts && sourceLanguage) {
           console.log('selected language', targetLanguage);
           console.log('text in useEffect IF: ', texts);
           translateText();
           setShouldTranslate(false);
         }
-      }, [shouldTranslate, texts, targetLanguage]);
+      }, [shouldTranslate, texts, targetLanguage, sourceLanguage]);
 
     const analyzeImage = async () => {
         try{
@@ -181,6 +207,7 @@ const TextExtraction = () => {
     };
 
 
+
     return (
         <ScrollView contentContainerStyle={styles.container}>
           <Text style={styles.title}>Google Cloud Vision API Text Detection Demo</Text>
@@ -205,6 +232,17 @@ const TextExtraction = () => {
               onValueChange={toggleOCR}
             />
           </View>
+          {shouldUseTesseract && (
+            <Picker
+              selectedValue={sourceLanguage}
+              style={styles.picker}
+              onValueChange={(itemValue, itemIndex) => setSourceLanguage(itemValue)}
+            >
+              <Picker.Item label="Select source language" value="" />
+              <Picker.Item label="English" value="en" />
+              {/* Add more languages as needed */}
+            </Picker>
+          )}
           <Picker
             selectedValue={targetLanguage}
             style={styles.picker}
@@ -222,12 +260,18 @@ const TextExtraction = () => {
               <Text style={styles.label}>Extracted Text:</Text>
               <Text style={styles.text}>{texts}</Text>
     
-              {translatedText && (
-                <>
-                  <Text style={styles.label}>Translated Text:</Text>
-                  <Text style={styles.text}>{translatedText}</Text>
-                </>
-              )}
+              {isTranslating ? (
+              <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
+              <>
+                {translatedText && (
+                  <>
+                    <Text style={{ marginTop: 10, fontWeight: 'bold' }}>Translated Text:</Text>
+                    <Text>{translatedText}</Text>
+                  </>
+                )}
+              </>
+            )}
             </View>
           )}
         </ScrollView>
