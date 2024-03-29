@@ -4,10 +4,14 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import TranslateText, {TranslateLanguage} from '@react-native-ml-kit/translate-text';
+
+import History from '../HistoryScreen/history';
+import TabNavigation from '../../Navigations/TabNavigation';
+
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 
-const TextExtraction = () => {
+const Home = () => {
     const [imageUri, setImageUri] = useState(null);
     const [texts, setTexts] = useState("");
     const [targetLanguage, setTargetLanguage] = useState("");
@@ -16,6 +20,7 @@ const TextExtraction = () => {
     const [shouldUseTesseract, setShouldUseTesseract] = useState(false);
     const [sourceLanguage, setSourceLanguage] = useState("");
     const [isTranslating, setIsTranslating] = useState(false);
+    const [translationHistory, setTranslationHistory] = useState([]);
 
     const toggleOCR = () => {
       setShouldUseTesseract(!shouldUseTesseract);
@@ -94,10 +99,21 @@ const TextExtraction = () => {
                 if(shouldUseTesseract){
                   translateResult = await mlTranslate(sourceLanguage);
                   setTranslatedText(translateResult);
+                  console.log('tesseract');
                 }else {
                   translateResult = await GoogleCloudTranslate();
                   setTranslatedText(translateResult);
+                  console.log('google OCR');
                 }
+                //Save the translation in the history
+                const saveTranslation = {
+                    translatedText: translateResult,
+                    imageUri: imageUri,
+                };
+                setTranslationHistory((prevHistory) => [...prevHistory, saveTranslation]);
+                console.log('translation history: ', translationHistory);
+                console.log('image uri: ', imageUri);
+                console.log('translated result: ', translateResult);
                 setIsTranslating(false);
           } catch (error) {
             setIsTranslating(false);
@@ -112,7 +128,7 @@ const TextExtraction = () => {
           translateText();
           setShouldTranslate(false);
         }
-      }, [shouldTranslate, texts, targetLanguage, sourceLanguage]);
+      }, [shouldTranslate, texts, targetLanguage, sourceLanguage, translationHistory]);
 
     const analyzeImage = async () => {
         try{
@@ -211,7 +227,7 @@ const TextExtraction = () => {
     return (
         <ScrollView contentContainerStyle={styles.container}>
           <Text style={styles.title}>Google Cloud Vision API Text Detection Demo</Text>
-          
+          {/* <TabNavigation translationHistory={translationHistory} /> */}
           {imageUri && (
             <Image source={{ uri: imageUri }} style={styles.image} />
           )}
@@ -275,6 +291,7 @@ const TextExtraction = () => {
             </View>
           )}
         </ScrollView>
+        
       );
 //   return (
 //     <View style={styles.container}>
@@ -333,7 +350,7 @@ const TextExtraction = () => {
 //   )
 }
 
-export default TextExtraction
+export default Home
 const styles = StyleSheet.create({
     container: {
       flexGrow: 1,

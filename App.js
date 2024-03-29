@@ -1,11 +1,16 @@
 import { StyleSheet, View } from 'react-native';
-import TextExtraction from './src';
+import Home from './App/Screens/HomeScreen/home';
+import { NavigationContainer } from '@react-navigation/native';
+import TabNavigation from './App/Navigations/TabNavigation';
 
 export default function App() {
   return (
     <View style={styles.container}>
-      <TextExtraction />
+      <NavigationContainer>
+        <TabNavigation/>
+      </NavigationContainer>
     </View>
+    
   );
 }
 
