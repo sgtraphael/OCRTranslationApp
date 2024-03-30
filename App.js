@@ -8,8 +8,8 @@ import TabNavigation from './App/Navigations/TabNavigation';
 import { TranslationProvider } from './App/Context/Context';
 import * as Font from 'expo-font';
 
-import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 
 import { AntDesign } from '@expo/vector-icons';
@@ -18,6 +18,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useState } from 'react';
 import color from './App/Util/color';
+import languageOptions from './App/Screens/LanguageOptions/languageOptions';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -48,7 +49,7 @@ const TabNavigator = () => {
   )
 }
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 export default function App() {
 
   const [appIsLoaded, setAppIsLoaded] = useState(false);
@@ -107,6 +108,11 @@ export default function App() {
         >
           <Stack.Group>
             <Stack.Screen name="Home" component={TabNavigator} options={{headerTitle:"Translate"}} />
+          </Stack.Group>
+          <Stack.Group screenOptions={{
+            presentation: 'containedModal'
+          }}>
+            <Stack.Screen name="LanguageOptions" component={languageOptions}/>
           </Stack.Group>
         </Stack.Navigator>
       </View>

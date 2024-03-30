@@ -235,7 +235,7 @@ const Home = (props) => {
             <View style={styles.languageContainer}>
                 <TouchableOpacity 
                 style={styles.languageOptions}
-                onPress={() => console.log("Pressed")}>
+                onPress={() => props.navigation.navigate('LanguageOptions')}>
                     <Text style={styles.languageOptionsContent}>English</Text>
                 </TouchableOpacity>
 
