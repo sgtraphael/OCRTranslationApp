@@ -11,7 +11,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 const Tab = createBottomTabNavigator();
 
 
-const TabNavigation = ({translationHistory})=> {
+const TabNavigation = (props)=> {
   return (
     <Tab.Navigator screenOptions={{headerShown:false, tabBarActiveTintColor:"purple"}}>
       <Tab.Screen name="Home" component={Home} options={{
@@ -20,7 +20,7 @@ const TabNavigation = ({translationHistory})=> {
         ),
         tabBarIcon: ({color,size})=>(<AntDesign name="home" size={size} color="black"/>)
       }}/>
-      <Tab.Screen name="History" children={()=><History translationHistory={translationHistory}/>} options={{
+      <Tab.Screen name="History" component={History} options={{
         tabBarLabel:({color})=>(
             <Text style={{color:color, fontSize:12, marginTop:-7}}>History</Text>
         ),

@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import TranslateText, {TranslateLanguage} from '@react-native-ml-kit/translate-text';
+import { TranslationContext } from '../../Context/Context.js';
+import { useContext } from 'react';
 
 import History from '../HistoryScreen/history';
 import TabNavigation from '../../Navigations/TabNavigation';
@@ -20,7 +22,7 @@ const Home = () => {
     const [shouldUseTesseract, setShouldUseTesseract] = useState(false);
     const [sourceLanguage, setSourceLanguage] = useState("");
     const [isTranslating, setIsTranslating] = useState(false);
-    const [translationHistory, setTranslationHistory] = useState([]);
+    const { addToHistory } = useContext(TranslationContext);
 
     const toggleOCR = () => {
       setShouldUseTesseract(!shouldUseTesseract);
@@ -106,12 +108,12 @@ const Home = () => {
                   console.log('google OCR');
                 }
                 //Save the translation in the history
-                const saveTranslation = {
+                const translationData = {
                     translatedText: translateResult,
                     imageUri: imageUri,
                 };
-                setTranslationHistory((prevHistory) => [...prevHistory, saveTranslation]);
-                console.log('translation history: ', translationHistory);
+                addToHistory(translationData);
+                // console.log('translation history: ', translationHistory);
                 console.log('image uri: ', imageUri);
                 console.log('translated result: ', translateResult);
                 setIsTranslating(false);
@@ -128,7 +130,7 @@ const Home = () => {
           translateText();
           setShouldTranslate(false);
         }
-      }, [shouldTranslate, texts, targetLanguage, sourceLanguage, translationHistory]);
+      }, [shouldTranslate, texts, targetLanguage, sourceLanguage]);
 
     const analyzeImage = async () => {
         try{
@@ -241,6 +243,7 @@ const Home = () => {
           <TouchableOpacity onPress={analyzeImage} style={styles.button}>
             <Text style={styles.buttonText}>Analyze image</Text>
           </TouchableOpacity>
+          {/* <TouchableOpacity onPress={}>Save Results</TouchableOpacity> */}
           <View>
             <Text>Use Tesseract OCR: {shouldUseTesseract ? 'Yes' : 'No'}</Text>
             <Switch

@@ -1,14 +1,20 @@
+import 'react-native-gesture-handler';
 import { StyleSheet, View } from 'react-native';
 import Home from './App/Screens/HomeScreen/home';
 import { NavigationContainer } from '@react-navigation/native';
 import TabNavigation from './App/Navigations/TabNavigation';
+import { TranslationProvider } from './App/Context/Context';
+
+
 
 export default function App() {
   return (
     <View style={styles.container}>
-      <NavigationContainer>
-        <TabNavigation/>
-      </NavigationContainer>
+      <TranslationProvider>
+        <NavigationContainer>
+          <TabNavigation/>
+        </NavigationContainer>
+      </TranslationProvider>
     </View>
     
   );
