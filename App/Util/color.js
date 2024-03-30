@@ -1,3 +1,5 @@
 export default{
-    THEME:'#8C65FF'
+    theme:'#1a73e8',
+    lightGrey: '#dedede',
+    btnTextColor: '#202124',
 }

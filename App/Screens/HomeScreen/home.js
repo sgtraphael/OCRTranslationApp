@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch, Settings, ActivityIndicator} from 'react-native'
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch, Settings, ActivityIndicator, Button} from 'react-native'
 import {Picker} from '@react-native-picker/picker'
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
@@ -13,7 +13,11 @@ import TabNavigation from '../../Navigations/TabNavigation';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 
-const Home = () => {
+import { AntDesign } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import color from '../../Util/color.js';
+
+const Home = (props) => {
     const [imageUri, setImageUri] = useState(null);
     const [texts, setTexts] = useState("");
     const [targetLanguage, setTargetLanguage] = useState("");
@@ -22,7 +26,7 @@ const Home = () => {
     const [shouldUseTesseract, setShouldUseTesseract] = useState(false);
     const [sourceLanguage, setSourceLanguage] = useState("");
     const [isTranslating, setIsTranslating] = useState(false);
-    const { addToHistory } = useContext(TranslationContext);
+    // const { addToHistory } = useContext(TranslationContext);
 
     const toggleOCR = () => {
       setShouldUseTesseract(!shouldUseTesseract);
@@ -112,7 +116,7 @@ const Home = () => {
                     translatedText: translateResult,
                     imageUri: imageUri,
                 };
-                addToHistory(translationData);
+                // addToHistory(translationData);
                 // console.log('translation history: ', translationHistory);
                 console.log('image uri: ', imageUri);
                 console.log('translated result: ', translateResult);
@@ -228,28 +232,74 @@ const Home = () => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.title}>Google Cloud Vision API Text Detection Demo</Text>
+            <View style={styles.languageContainer}>
+                <TouchableOpacity 
+                style={styles.languageOptions}
+                onPress={() => console.log("Pressed")}>
+                    <Text style={styles.languageOptionsContent}>English</Text>
+                </TouchableOpacity>
+
+                <View style={styles.arrowContainer}>
+                    <AntDesign name="arrowright" size={24} color={color.lightGrey} />
+                </View>
+
+                <TouchableOpacity 
+                style={styles.languageOptions}
+                onPress={() => console.log("Pressed")}>
+                    <Text style={styles.languageOptionsContent}>French</Text>
+                </TouchableOpacity>
+            </View> 
+
           {/* <TabNavigation translationHistory={translationHistory} /> */}
           {imageUri && (
             <Image source={{ uri: imageUri }} style={styles.image} />
           )}
-          <TouchableOpacity onPress={takePhoto} style={styles.button}>
-            <Text style={styles.buttonText}>Take a photo</Text>   
-          </TouchableOpacity>
-          <TouchableOpacity onPress={pickImage} style={styles.button}>
-            <Text style={styles.buttonText}>Choose an image</Text>
-          </TouchableOpacity>
-    
-          <TouchableOpacity onPress={analyzeImage} style={styles.button}>
-            <Text style={styles.buttonText}>Analyze image</Text>
-          </TouchableOpacity>
+
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity onPress={takePhoto} style={styles.button}>
+                <AntDesign name="camera" size={24} color={color.theme} />
+                <Text style={styles.buttonText}>Photo</Text>   
+            </TouchableOpacity>
+            <TouchableOpacity onPress={pickImage} style={styles.button}>
+                <Ionicons name="albums-sharp" size={24} color={color.theme} />
+                <Text style={styles.buttonText}>Album</Text>
+            </TouchableOpacity>
+        
+            <TouchableOpacity onPress={analyzeImage} style={styles.button}>
+                <Ionicons name="arrow-forward-circle-sharp" size={24} color={color.theme} />
+                <Text style={styles.buttonText}>Translate</Text>
+            </TouchableOpacity>
+          </View>
+
           {/* <TouchableOpacity onPress={}>Save Results</TouchableOpacity> */}
           <View>
-            <Text>Use Tesseract OCR: {shouldUseTesseract ? 'Yes' : 'No'}</Text>
+            <Text>Offline Mode: {shouldUseTesseract ? 'On' : 'Off'}</Text>
             <Switch
               value={shouldUseTesseract}
               onValueChange={toggleOCR}
             />
+          </View>
+          {texts.length > 0 && (
+            <View style={styles.resultContainer}>
+              <Text style={styles.label}>Source Text:</Text>
+              <Text style={styles.text}>{texts}</Text>
+    
+              {isTranslating ? (
+              <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
+              <>
+                {translatedText && (
+                  <>
+                    <Text style={styles.label}>Translated Text:</Text>
+                    <Text Text style={styles.text}>{translatedText}</Text>
+                  </>
+                )}
+              </>
+            )}
+            </View>
+          )}
+          <View style={styles.historyContainer}>
+
           </View>
           {shouldUseTesseract && (
             <Picker
@@ -274,7 +324,7 @@ const Home = () => {
             {/* Add more languages as needed */}
           </Picker>
     
-          {texts.length > 0 && (
+          {/* {texts.length > 0 && (
             <View style={styles.resultContainer}>
               <Text style={styles.label}>Extracted Text:</Text>
               <Text style={styles.text}>{texts}</Text>
@@ -292,65 +342,11 @@ const Home = () => {
               </>
             )}
             </View>
-          )}
+          )} */}
         </ScrollView>
         
       );
-//   return (
-//     <View style={styles.container}>
-//       <Text style={styles.title}>
-//         Google Cloud Vision API Text Detection Demo
-//       </Text>
-//       {imageUri && (
-//         <Image
-//             source = {{uri: imageUri}}
-//             style = {{width: 300, height: 300}} 
-//         />
-//       )}
-//       <TouchableOpacity 
-//         onPress={pickImage}
-//         style={styles.button}
-//       >
-//         <Text style={styles.text}>Choose an image</Text>
-//       </TouchableOpacity>
-//       <TouchableOpacity
-//         onPress={analyzeImage}
-//         style={styles.button}
-//       >
-//         <Text style={styles.text}>Analyze image</Text>
-//       </TouchableOpacity>
-//       <Picker
-//             selectedValue={targetLanguage}
-//             style={styles.picker}
-//             onValueChange={(itemValue, itemIndex) => setTargetLanguage(itemValue)}
-//         >
-//             <Picker.Item label="Select target language" value="" />
-//             <Picker.Item label="Spanish" value="es" />
-//             <Picker.Item label="French" value="fr" />
-//             <Picker.Item label="German" value="de" />
-//             {/* Add more languages as needed */}
-//         </Picker>
-//       {
-//         texts.length > 0 && (
-//             <View>
-//                 <Text style = {styles.label}>
-//                     Result: {texts}
-//                 </Text>
-//                 {
-//                     // texts.map((text) => (
-//                     //     <Text
-//                     //         key={text.mid}
-//                     //         style={styles.outputText}
-//                     //     >
-//                     //         {text.description}
-//                     //     </Text> 
-//                     // ))
-//                 }
-//             </View>
-//         )
-//       }
-//     </View>
-//   )
+
 }
 
 export default Home
@@ -358,9 +354,30 @@ const styles = StyleSheet.create({
     container: {
       flexGrow: 1,
       backgroundColor: '#fff',
-      alignItems: 'center',
+    //   alignItems: 'center',
       paddingVertical: 40,
       paddingHorizontal: 20,
+    },
+    languageContainer: {
+        flexDirection: 'row',
+        borderBottomColor: color.lightGrey,
+        borderBottomWidth: 1,
+    },
+    languageOptions: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 15,
+    },
+    arrowContainer: {
+        width: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    languageOptionsContent: {
+        color: color.theme,
+        fontFamily: 'Light',
+        letterSpacing: 0.2
     },
     title: {
       fontSize: 24,
@@ -371,18 +388,37 @@ const styles = StyleSheet.create({
     image: {
       width: 300,
       height: 300,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      marginHorizontal: 20,
       marginBottom: 20,
+      marginTop: 15,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        flex: 1,
+        marginTop: 10,
+        paddingHorizontal:20,
+        paddingVertical: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     button: {
-      backgroundColor: '#DDDDDD',
+      backgroundColor: color.lightGrey,
       paddingVertical: 10,
       paddingHorizontal: 20,
-      marginBottom: 10,
       borderRadius: 5,
+      alignItems: 'center',
+      justifyContent: 'center',
+      height:120,
+      width:120
     },
     buttonText: {
       fontSize: 18,
-      fontWeight: 'bold',
+      fontFamily: 'Bold',
+      letterSpacing: 0.2,
+      color: color.btnTextColor,
     },
     picker: {
       width: '100%',
@@ -391,6 +427,11 @@ const styles = StyleSheet.create({
     resultContainer: {
       marginTop: 20,
       alignItems: 'center',
+      borderBottomColor: color.lightGrey,
+      borderBottomWidth: 1,
+      flexDirection: 'row',
+      height: 90,
+      paddingVertical:10,
     },
     label: {
       fontSize: 18,
@@ -399,8 +440,16 @@ const styles = StyleSheet.create({
     },
     text: {
       fontSize: 16,
+      fontFamily: 'regular',
+      letterSpacing: 0.2,
+      flex:1,
       marginBottom: 20,
       textAlign: 'center',
+    },
+    historyContainer:{
+        backgroundColor: '#F2F2F7',
+        flex: 1,
+        padding: 10,
     },
   });
   
