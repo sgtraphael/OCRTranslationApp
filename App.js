@@ -116,10 +116,10 @@ export default function App() {
             },
             headerTitleStyle: {
               fontFamily: 'Medium',
-              color: '#202124'
+              color: color.text,
             }
           }}>
-            <Stack.Screen name="LanguageOptions" component={languageOptions} options={{headerTitle:"Choose a language"}}/>
+            <Stack.Screen name="LanguageOptions" component={languageOptions}/>
           </Stack.Group>
         </Stack.Navigator>
       </View>
