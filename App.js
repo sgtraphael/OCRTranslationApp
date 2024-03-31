@@ -110,9 +110,16 @@ export default function App() {
             <Stack.Screen name="Home" component={TabNavigator} options={{headerTitle:"Translate"}} />
           </Stack.Group>
           <Stack.Group screenOptions={{
-            presentation: 'containedModal'
+            presentation: 'containedModal',
+            headerStyle: {
+              backgroundColor: 'white'
+            },
+            headerTitleStyle: {
+              fontFamily: 'Medium',
+              color: '#202124'
+            }
           }}>
-            <Stack.Screen name="LanguageOptions" component={languageOptions}/>
+            <Stack.Screen name="LanguageOptions" component={languageOptions} options={{headerTitle:"Choose a language"}}/>
           </Stack.Group>
         </Stack.Navigator>
       </View>

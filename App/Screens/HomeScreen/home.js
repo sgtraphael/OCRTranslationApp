@@ -220,7 +220,8 @@ const Home = (props) => {
             // console.log('textAnnotation: ', extractedText);
             // console.log("text extracted: ", texts);
             setShouldTranslate(true);
-            //console.log('texts', texts);
+            console.log('texts', texts);
+            console.log('translated Text', translatedText);
 
         } catch(error){
             console.error('Error analyzing image: ', error);
@@ -245,7 +246,7 @@ const Home = (props) => {
 
                 <TouchableOpacity 
                 style={styles.languageOptions}
-                onPress={() => console.log("Pressed")}>
+                onPress={() => props.navigation.navigate('LanguageOptions')}>
                     <Text style={styles.languageOptionsContent}>French</Text>
                 </TouchableOpacity>
             </View> 
@@ -321,6 +322,7 @@ const Home = (props) => {
             <Picker.Item label="Spanish" value="es" />
             <Picker.Item label="French" value="fr" />
             <Picker.Item label="German" value="de" />
+            <Picker.Item label="Chinese" value="zh" />
             {/* Add more languages as needed */}
           </Picker>
     
