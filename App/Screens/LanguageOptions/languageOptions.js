@@ -1,10 +1,12 @@
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import React, {useCallback, useEffect} from 'react';
 import languageList from '../../Util/languageList';
+import languageListOffline from '../../Util/languageListOffline';
 import { HeaderButton, HeaderButtons, Item } from 'react-navigation-header-buttons';
 import color from '../../Util/color';
 import { EvilIcons } from '@expo/vector-icons';
 import LanguageItem from '../../components/LanguageItem';
+
 
 const headerBtn = props => { 
     return <HeaderButton
@@ -32,6 +34,15 @@ export default function languageOptions(props) {
             }
         })
     }, [props.navigation]);
+    const mode = props.route.params.appMode;
+    console.log('mode',mode);
+    const getAppMode = useCallback(() => {
+        if (mode == false) {
+            return Object.keys(languageList);
+        } else {
+            return Object.keys(languageListOffline);
+        }
+    },[mode])
 
     // const onSelect = useCallback(itemKey => {
     //     // console.log('direction: ', params.direction);
@@ -52,10 +63,11 @@ export default function languageOptions(props) {
     return (
         <View style={styles.container}>
             <FlatList
-                data={Object.keys(languageList)}
+                data={getAppMode()}
                 renderItem={(itemData) => {
                     const languageKey = itemData.item;
-                    const languageString = languageList[languageKey];
+                    //if mode===true use languageListOffline, else use languageLists
+                    const languageString = mode === false ? languageList[languageKey] : languageListOffline[languageKey];
                     return <LanguageItem 
                                 onPress={() => onLanguageSelect(languageKey)}
                                 text={languageString} 

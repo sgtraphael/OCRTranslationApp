@@ -254,7 +254,7 @@ export default function Home(props) {
             <View style={styles.languageContainer}>
                 <TouchableOpacity 
                 style={styles.languageOptions}
-                onPress={() => props.navigation.navigate('LanguageOptions', {title: "Source Language Select", selected: sourceLanguage, direction: 'source'})}>
+                onPress={() => props.navigation.navigate('LanguageOptions', {title: "Source Language Select", selected: sourceLanguage, direction: 'source', appMode: shouldUseTesseract})}>
                     <Text style={styles.languageOptionsContent}>{languageList[sourceLanguage]}</Text>
                 </TouchableOpacity>
 
@@ -264,7 +264,7 @@ export default function Home(props) {
 
                 <TouchableOpacity 
                 style={styles.languageOptions}
-                onPress={() => props.navigation.navigate('LanguageOptions', {title: "Target Language Select", selected: targetLanguage, direction: 'target'})}>
+                onPress={() => props.navigation.navigate('LanguageOptions', {title: "Target Language Select", selected: targetLanguage, direction: 'target', appMode: shouldUseTesseract})}>
                     <Text style={styles.languageOptionsContent}>{languageList[targetLanguage]}</Text>
                 </TouchableOpacity>
             </View> 
