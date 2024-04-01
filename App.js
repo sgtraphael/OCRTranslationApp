@@ -1,8 +1,9 @@
 import 'react-native-gesture-handler';
 import { StyleSheet, View, Text } from 'react-native';
 import Home from './App/Screens/HomeScreen/home';
-import History from './App/Screens/HistoryScreen/history'
-import Setting  from './App/Screens/SettingScreen/setting'
+import History from './App/Screens/HistoryScreen/history';
+import Setting  from './App/Screens/SettingScreen/setting';
+import Saved  from './App/Screens/SavedScreen/saved';
 import { NavigationContainer } from '@react-navigation/native';
 import TabNavigation from './App/Navigations/TabNavigation';
 import { TranslationProvider } from './App/Context/Context';
@@ -14,6 +15,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
 
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useState } from 'react';
@@ -37,11 +39,11 @@ const TabNavigator = () => {
         ),
         tabBarIcon:(props)=> <AntDesign name="home" size={props.size} color={props.color} />
       }}/>
-      <Tab.Screen name="History" component={History} options={{
+      <Tab.Screen name="Saved" component={Saved} options={{
         tabBarLabel:({color})=>(
-            <Text style={{color:color, fontSize:12, marginTop:-7}}>History</Text>
+            <Text style={{color:color, fontSize:12, marginTop:-7}}>Saved</Text>
         ),
-        tabBarIcon:(props)=><FontAwesome5 name="history" size={props.size} color={props.color} />
+        tabBarIcon:(props)=><FontAwesome name="star-o" size={props.size} color={props.color} />
       }}/>
       <Tab.Screen name="Setting" component={Setting} options={{
         tabBarLabel:({color})=>(

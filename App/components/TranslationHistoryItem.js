@@ -1,16 +1,33 @@
 import { StyleSheet, TouchableOpacity, View, Text } from "react-native"
 import { MaterialIcons } from '@expo/vector-icons';
 import color from "../Util/color";
-import {useSelector} from "react-redux";
+import {useSelector, useDispatch} from "react-redux";
+import { useCallback } from "react";
+import { setSaved } from "../store/savedSlice";
 
 
 
 export default TranslationHistoryItem = props => {
+    const dispatch = useDispatch();
     const {itemId} = props;
     const item = useSelector(state => state.history.items.find(item => item.id === itemId));
+    const savedItems = useSelector(state => state.saved.items);
+
+    const isSaved = savedItems.some(item => item.id === itemId);
+    const star = isSaved ? 'star' : 'star-border';
+    const saveItem = useCallback(() => {
+        let newSavedItems;
+        if(isSaved) {
+            newSavedItems = savedItems.filter(item => item.id !== itemId); //update the saveditems array by removing the saved ite,
+        }
+        else{
+            newSavedItems = savedItems.slice(); //return the copy of the arraay as state item is read-only
+            newSavedItems.push(item); //update the saveditems array by adding the saved item.
+        }
+        dispatch(setSaved({items: newSavedItems}));
+    },[dispatch, savedItems]);
     // console.log('selected prop:', props.selected);
     // console.log('languageKey: ', props.langKey);
-
     return <View style={styles.container}
 >
         <View style={styles.textContainer}>
@@ -18,8 +35,8 @@ export default TranslationHistoryItem = props => {
             <Text style={styles.sublabel}>{item.translatedText}</Text>
         </View>
 
-        <TouchableOpacity style={styles.iconContainer}>
-            <MaterialIcons name="star" size={24} color={color.smallText} />
+        <TouchableOpacity style={styles.iconContainer} onPress={saveItem}>
+            <MaterialIcons name={star} size={24} color={color.smallText} />
         </TouchableOpacity>
     </View>
 }
