@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch, Settings, ActivityIndicator, Button, Modal} from 'react-native'
 import {Picker} from '@react-native-picker/picker'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import TranslateText, {TranslateLanguage} from '@react-native-ml-kit/translate-text';
@@ -8,15 +8,18 @@ import { TranslationContext } from '../../Context/Context.js';
 import { useContext } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
+
 import History from '../HistoryScreen/history';
 import TabNavigation from '../../Navigations/TabNavigation';
 import { mlTranslate, mlkitTranslate } from '../../Util/mlKitTranslate.js';
 
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
+import * as Clipboard from 'expo-clipboard';
 
 import { AntDesign } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import color from '../../Util/color.js';
 import languageList from '../../Util/languageList.js';
 import { googleTranslateApi } from '../../Util/googleTranslateApi.js';
@@ -37,6 +40,7 @@ export default function Home(props) {
     const [shouldUseTesseract, setShouldUseTesseract] = useState(false);
     const [sourceLanguage, setSourceLanguage] = useState("en");
     const [isTranslating, setIsTranslating] = useState(false);
+    const [showModal, setShowModal] = useState(false);
     // const { addToHistory } = useContext(TranslationContext);
     useEffect(() => {
         if (params.targetLanguage) {
@@ -123,7 +127,16 @@ export default function Home(props) {
 
                 try{
                     setIsTranslating(true);
+                    setShowModal(true);
                     let translateResult = '';
+                    // props.navigation.navigate('Result', {
+                    //     screen: 'Result',
+                    //     params:{
+                    //         translatedText: translatedText,
+                    //         sourceText: texts,
+                    //         isTranslating: isTranslating
+                    //     },
+                    //   });
                     if(shouldUseTesseract){
                       translateResult = await mlkitTranslate(texts, sourceLanguage, targetLanguage);
                       setTranslatedText(translateResult);
@@ -140,6 +153,7 @@ export default function Home(props) {
                   }finally{
                     setIsTranslating(false);
                   }
+                
                 //Save the translation in the history
                 const translationData = {
                     translatedText: translateResult,
@@ -148,7 +162,7 @@ export default function Home(props) {
                 // addToHistory(translationData);
                 // console.log('translation history: ', translationHistory);
                 console.log('image uri: ', imageUri);
-                console.log('translated result: ', translateResult);
+                console.log('translated result: ', translateText);
                 setIsTranslating(false);
         //   } catch (error) {
         //     setIsTranslating(false);
@@ -164,7 +178,16 @@ export default function Home(props) {
           setShouldTranslate(false);
         }
       }, [shouldTranslate, texts, targetLanguage, sourceLanguage]);
-
+      const closeModal = () => {
+        setShowModal(false);
+    };
+    const handleSubmit = async() => {
+        ()=> isTranslating? undefined : analyzeImage
+    }
+    const copyToClipboard = useCallback(async () => {
+        await Clipboard.setStringAsync(translatedText);
+        alert('Text copied to clipboard');
+    }, [translatedText]);
     const analyzeImage = async () => {
         try{
             if (!imageUri) {
@@ -250,14 +273,13 @@ export default function Home(props) {
             // console.log("text extracted: ", texts);
             setShouldTranslate(true);
             console.log('texts', texts);
-            // console.log('translated Text', translatedText);
+            console.log('translated Text', translatedText);
 
         } catch(error){
             console.error('Error analyzing image: ', error);
             alert('Error analyzing image. Please try again later');
         }
     };
-
 
 
     return (
@@ -299,6 +321,13 @@ export default function Home(props) {
                 <Ionicons name="arrow-forward-circle-sharp" size={24} color={color.theme} />
                 <Text style={styles.buttonText}>Translate</Text>
             </TouchableOpacity>
+            {/* <TouchableOpacity onPress={()=> {handleSubmit(); 
+                props.navigation.navigate('Result', 
+                {title:'Result', sourceText:texts, translatedText:translatedText, isTranslating:isTranslating}
+                )}} style={styles.button}>
+                <Ionicons name="arrow-forward-circle-sharp" size={24} color={color.theme} />
+                <Text style={styles.buttonText}>Translate</Text>
+            </TouchableOpacity> */}
           </View>
 
           {/* <TouchableOpacity onPress={}>Save Results</TouchableOpacity> */}
@@ -309,12 +338,12 @@ export default function Home(props) {
               onValueChange={toggleOCR}
             />
           </View>
-          {texts.length > 0 && (
+          {/* {texts.length > 0 && (
             <View style={styles.resultContainer}>
               <Text style={styles.label}>Source Text:</Text>
               <Text style={styles.text}>{texts}</Text>
     
-              {/* {isTranslating ? (
+              {isTranslating ? (
               <ActivityIndicator size="small" color={color.theme} />
             ) : (
               <>
@@ -325,17 +354,33 @@ export default function Home(props) {
                   </>
                 )}
               </>
-            )} */}
+            )}
             </View>
-          )}
-            <Modal visible={isTranslating} transparent>
-                <View style={styles.modalContainer}>  
-                    <ActivityIndicator size="small" color={color.theme} />
+          )} */}
+            <Modal visible={showModal} animationType='slide'>
+                <View style={styles.modalContainer}>
+                {isTranslating ? (
+                        <ActivityIndicator size="small" color={color.theme} />
+                    ) : (
+                        <>
+                            
+                            <Text style={styles.modalText}>Original: {texts}</Text>
+                            <View style={styles.resultContainer}>
+                            <Text style={styles.modalText}>Translation: {translatedText}</Text>
+                                <TouchableOpacity onPress={copyToClipboard} style={styles.iconContainer}>
+                                    <MaterialIcons name="content-copy" size={24} color="black" />
+                                </TouchableOpacity>
+                            </View>
+                            <Button title="Close" onPress={closeModal} />
+                        </>
+                    )}
                 </View> 
             </Modal>
-            {translatedText.length > 0 && (
+
+            {/* {translatedText.length > 0 && (
                 <Result translatedText={translatedText} sourceText={texts} />
-            )}
+            )} */}
+
           <View style={styles.historyContainer}></View>
           {/* {shouldUseTesseract && (
             <Picker
@@ -459,18 +504,20 @@ const styles = StyleSheet.create({
       marginBottom: 20,
     },
     resultContainer: {
-      marginTop: 20,
-      alignItems: 'center',
-      borderBottomColor: color.lightGrey,
-      borderBottomWidth: 1,
-      flexDirection: 'row',
-      height: 90,
-      paddingVertical:10,
+        borderBottomColor: color.lightGrey,
+        borderBottomWidth: 1,
+        marginTop: 10,
+        flexDirection: 'row',
     },
     label: {
       fontSize: 18,
       fontWeight: 'bold',
       marginBottom: 10,
+    },
+    modalLabel:{
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
     },
     text: {
       fontSize: 16,
@@ -479,6 +526,27 @@ const styles = StyleSheet.create({
       flex:1,
       marginBottom: 20,
       textAlign: 'center',
+    },
+    modalContainer: {
+        borderBottomColor: color.lightGrey,
+        borderBottomWidth: 1,
+        paddingVertical:10,
+        paddingHorizontal:15,
+        marginTop: 10,
+
+    },
+    modalText: {
+        fontSize: 16,
+        fontFamily: 'regular',
+        letterSpacing: 0.2,
+        marginBottom: 20,
+        marginHorizontal: 10,
+        textAlign: 'left',
+    },
+    iconContainer:{
+        paddingHorizontal: 2,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     historyContainer:{
         backgroundColor: '#F2F2F7',
