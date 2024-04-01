@@ -10,6 +10,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 
 import History from '../HistoryScreen/history';
 import TabNavigation from '../../Navigations/TabNavigation';
+import { mlTranslate, mlkitTranslate } from '../../Util/mlKitTranslate.js';
 
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
@@ -18,6 +19,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import color from '../../Util/color.js';
 import languageList from '../../Util/languageList.js';
+import { googleTranslateApi } from '../../Util/googleTranslateApi.js';
 
 export default function Home(props) {
     console.log('Home component params:', props.route.params);
@@ -114,20 +116,24 @@ export default function Home(props) {
                 }
                 const mlTranslate = async () => {
                   const translateResult = await TranslateText.translate({text: texts, sourceLanguage: sourceLanguage, targetLanguage: targetLanguage,downloadModelIfNeeded: true});
-                  console.log("translated text: ", translateResult);
+                //   console.log("translated text: ", translateResult);
                   return translateResult
                 }
 
                 setIsTranslating(true);
                 let translateResult = '';
                 if(shouldUseTesseract){
-                  translateResult = await mlTranslate(sourceLanguage);
+                  translateResult = await mlkitTranslate(texts, sourceLanguage, targetLanguage);
                   setTranslatedText(translateResult);
                   console.log('tesseract');
                 }else {
-                  translateResult = await GoogleCloudTranslate();
-                  setTranslatedText(translateResult);
-                  console.log('google OCR');
+                  try{
+                    translateResult = await googleTranslateApi(texts, targetLanguage);
+                    setTranslatedText(translateResult);
+                    console.log('google OCR');
+                  } catch (error){
+                    console.log(error);
+                  }
                 }
                 //Save the translation in the history
                 const translationData = {
@@ -239,7 +245,7 @@ export default function Home(props) {
             // console.log("text extracted: ", texts);
             setShouldTranslate(true);
             console.log('texts', texts);
-            console.log('translated Text', translatedText);
+            // console.log('translated Text', translatedText);
 
         } catch(error){
             console.error('Error analyzing image: ', error);
@@ -284,7 +290,7 @@ export default function Home(props) {
                 <Text style={styles.buttonText}>Album</Text>
             </TouchableOpacity>
         
-            <TouchableOpacity onPress={analyzeImage} style={styles.button}>
+            <TouchableOpacity onPress={isTranslating? undefined : analyzeImage} style={styles.button}>
                 <Ionicons name="arrow-forward-circle-sharp" size={24} color={color.theme} />
                 <Text style={styles.buttonText}>Translate</Text>
             </TouchableOpacity>
@@ -304,7 +310,7 @@ export default function Home(props) {
               <Text style={styles.text}>{texts}</Text>
     
               {isTranslating ? (
-              <ActivityIndicator size="large" color="#0000ff" />
+              <ActivityIndicator size="small" color={color.theme} />
             ) : (
               <>
                 {translatedText && (
