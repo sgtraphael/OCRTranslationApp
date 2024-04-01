@@ -15,6 +15,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 
 import * as SplashScreen from 'expo-splash-screen';
@@ -47,9 +48,9 @@ const TabNavigator = () => {
       }}/>
       <Tab.Screen name="Setting" component={Setting} options={{
         tabBarLabel:({color})=>(
-            <Text style={{color:color, fontSize:12, marginTop:-7}}>History</Text>
+            <Text style={{color:color, fontSize:12, marginTop:-7}}>Settings</Text>
         ),
-        tabBarIcon:(props)=><FontAwesome5 name="history" size={props.size} color={props.color} />
+        tabBarIcon:(props)=><Ionicons name="settings" size={props.size} color={props.color} />
       }}/>
     </Tab.Navigator>
   )

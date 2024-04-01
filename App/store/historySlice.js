@@ -15,9 +15,12 @@ const historySlice = createSlice({
         },
         setHistoryItems: (state,action) => {
             state.items = action.payload.items;
+        },
+        clearHistoryItems: (state) => {
+            state.items = [];
         }
     }
 });
 
-export const { addHistoryItem, setHistoryItems} = historySlice.actions;
+export const { addHistoryItem, setHistoryItems, clearHistoryItems} = historySlice.actions;
 export default historySlice.reducer;

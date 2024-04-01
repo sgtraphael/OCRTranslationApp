@@ -29,14 +29,20 @@ import { googleTranslateApi } from '../../Util/googleTranslateApi.js';
 import Result from '../ResultScreen/result.js';
 import { addHistoryItem, setHistoryItems } from '../../store/historySlice.js';
 import TranslationHistoryItem from '../../components/TranslationHistoryItem.js';
+import { setSaved } from '../../store/savedSlice.js';
 
 const retrieveData = () => {
     return async dispatch => {
         try {
-            const historyStr = await AsyncStorage.getItem('history')
+            const historyStr = await AsyncStorage.getItem('history');
             if(historyStr !== null) {
                 const history = JSON.parse(historyStr);
                 dispatch(setHistoryItems({items: history}));
+            }
+            const saveStr = await AsyncStorage.getItem('saved');
+            if(saveStr !== null) {
+                const saved = JSON.parse(historyStr);
+                dispatch(setSaved({items: saved}));
             }
         } catch (error) {
             console.log(error);

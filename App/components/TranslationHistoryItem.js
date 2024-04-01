@@ -4,18 +4,22 @@ import color from "../Util/color";
 import {useSelector, useDispatch} from "react-redux";
 import { useCallback } from "react";
 import { setSaved } from "../store/savedSlice";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 
 export default TranslationHistoryItem = props => {
     const dispatch = useDispatch();
     const {itemId} = props;
-    const item = useSelector(state => state.history.items.find(item => item.id === itemId));
+    const item = useSelector(state => {
+        return state.history.items.find(item => item.id === itemId) || 
+            state.saved.items.find(item => item.id === itemId)
+    });
     const savedItems = useSelector(state => state.saved.items);
 
     const isSaved = savedItems.some(item => item.id === itemId);
     const star = isSaved ? 'star' : 'star-border';
-    const saveItem = useCallback(() => {
+    const saveItem = useCallback(async () => {
         let newSavedItems;
         if(isSaved) {
             newSavedItems = savedItems.filter(item => item.id !== itemId); //update the saveditems array by removing the saved ite,
@@ -24,6 +28,8 @@ export default TranslationHistoryItem = props => {
             newSavedItems = savedItems.slice(); //return the copy of the arraay as state item is read-only
             newSavedItems.push(item); //update the saveditems array by adding the saved item.
         }
+
+        await AsyncStorage.setItem('saved', JSON.stringify(newSavedItems)); //save the array to the local storage.
         dispatch(setSaved({items: newSavedItems}));
     },[dispatch, savedItems]);
     // console.log('selected prop:', props.selected);
@@ -63,6 +69,7 @@ const styles = StyleSheet.create({
         fontFamily:'Regular',
         letterSpacing: 0.2,
         color: color.smallText,
+        fontSize: 13,
     },
     iconContainer: {
         width: 30,
