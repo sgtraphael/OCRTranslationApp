@@ -21,6 +21,9 @@ import color from './App/Util/color';
 import languageOptions from './App/Screens/LanguageOptions/languageOptions';
 import Result from './App/Screens/ResultScreen/result';
 
+import {Provider} from 'react-redux';
+import store from './App/store/store';
+
 SplashScreen.preventAutoHideAsync();
 
 const Tab = createBottomTabNavigator();
@@ -94,38 +97,40 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      <View onLayout={onLayout} style={{flex:1}}>
-        <Stack.Navigator
-          screenOptions={{
-            headerTitleStyle: {
-              fontFamily: 'Medium',
-              color: 'white',
-            },
-            headerStyle: {
-              backgroundColor: color.theme,
-            }
-          }}
-        >
-          <Stack.Group>
-            <Stack.Screen name="Home" component={TabNavigator} options={{headerTitle:"Translate"}} />
-          </Stack.Group>
-          <Stack.Group screenOptions={{
-            presentation: 'containedModal',
-            headerStyle: {
-              backgroundColor: 'white'
-            },
-            headerTitleStyle: {
-              fontFamily: 'Medium',
-              color: color.text,
-            }
-          }}>
-            <Stack.Screen name="LanguageOptions" component={languageOptions}/>
-            <Stack.Screen name="Result" component={Result}/>
-          </Stack.Group>
-        </Stack.Navigator>
-      </View>
-    </NavigationContainer>
+    <Provider store={store}>
+      <NavigationContainer>
+        <View onLayout={onLayout} style={{flex:1}}>
+          <Stack.Navigator
+            screenOptions={{
+              headerTitleStyle: {
+                fontFamily: 'Medium',
+                color: 'white',
+              },
+              headerStyle: {
+                backgroundColor: color.theme,
+              }
+            }}
+          >
+            <Stack.Group>
+              <Stack.Screen name="Home" component={TabNavigator} options={{headerTitle:"Translate"}} />
+            </Stack.Group>
+            <Stack.Group screenOptions={{
+              presentation: 'containedModal',
+              headerStyle: {
+                backgroundColor: 'white'
+              },
+              headerTitleStyle: {
+                fontFamily: 'Medium',
+                color: color.text,
+              }
+            }}>
+              <Stack.Screen name="LanguageOptions" component={languageOptions}/>
+              <Stack.Screen name="Result" component={Result}/>
+            </Stack.Group>
+          </Stack.Navigator>
+        </View>
+      </NavigationContainer>
+    </Provider>
   )
   // return (
   //   <View style={styles.container}>

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch, Settings, ActivityIndicator, Button, Modal} from 'react-native'
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch, Settings, ActivityIndicator, Button, Modal, FlatList} from 'react-native'
 import {Picker} from '@react-native-picker/picker'
 import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios';
@@ -7,6 +7,8 @@ import TranslateText, {TranslateLanguage} from '@react-native-ml-kit/translate-t
 import { TranslationContext } from '../../Context/Context.js';
 import { useContext } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
+import uuid from 'react-native-uuid';
 
 
 import History from '../HistoryScreen/history';
@@ -24,8 +26,16 @@ import color from '../../Util/color.js';
 import languageList from '../../Util/languageList.js';
 import { googleTranslateApi } from '../../Util/googleTranslateApi.js';
 import Result from '../ResultScreen/result.js';
+import { addHistoryItem } from '../../store/historySlice.js';
+import TranslationHistoryItem from '../../components/TranslationHistoryItem.js';
 
 export default function Home(props) {
+    console.disableYellowBox = true;// temporarilty disable warning msgs
+
+    const dispatch = useDispatch();
+    const history = useSelector(state => state.history.items);
+    console.log('history:', history);
+    
     console.log('Home component params:', props.route.params);
     console.log('Home component props:', props);
     
@@ -146,7 +156,16 @@ export default function Home(props) {
                         setTranslatedText(translateResult);
                         console.log('google OCR');
                     }
-
+                    //dispatch action
+                    const id = uuid.v4(); //id for translateResult Objects
+                    translateResult.id = id;
+                    const translateResultObj ={
+                        id: id,
+                        translatedText: translateResult,
+                        sourceText: texts,
+                        imageUri: imageUri,
+                    };
+                    dispatch(addHistoryItem({item: translateResultObj}));
                 } catch (error) {
                     console.error('Error translating text: ', error);
                     alert('Error translating text. Please try again later');
@@ -177,7 +196,7 @@ export default function Home(props) {
           translateText();
           setShouldTranslate(false);
         }
-      }, [shouldTranslate, texts, targetLanguage, sourceLanguage]);
+      }, [shouldTranslate, texts, targetLanguage, sourceLanguage, dispatch]);
       const closeModal = () => {
         setShowModal(false);
     };
@@ -381,7 +400,14 @@ export default function Home(props) {
                 <Result translatedText={translatedText} sourceText={texts} />
             )} */}
 
-          <View style={styles.historyContainer}></View>
+          <View style={styles.historyContainer}>
+            <FlatList
+                data={history}
+                renderItem={itemData => {
+                    return <TranslationHistoryItem itemId={itemData.item.id}/>
+                }}
+            />
+          </View>
           {/* {shouldUseTesseract && (
             <Picker
               selectedValue={sourceLanguage}
@@ -549,9 +575,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     historyContainer:{
-        backgroundColor: '#F2F2F7',
-        flex: 1,
         padding: 10,
+        marginTop: 10,
+        marginHorizontal: 10,
     },
   });
   
