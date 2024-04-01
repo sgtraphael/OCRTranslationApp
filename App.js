@@ -19,6 +19,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useState } from 'react';
 import color from './App/Util/color';
 import languageOptions from './App/Screens/LanguageOptions/languageOptions';
+import Result from './App/Screens/ResultScreen/result';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -120,6 +121,7 @@ export default function App() {
             }
           }}>
             <Stack.Screen name="LanguageOptions" component={languageOptions}/>
+            <Stack.Screen name="Result" component={Result}/>
           </Stack.Group>
         </Stack.Navigator>
       </View>

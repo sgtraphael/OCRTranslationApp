@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch, Settings, ActivityIndicator, Button} from 'react-native'
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch, Settings, ActivityIndicator, Button, Modal} from 'react-native'
 import {Picker} from '@react-native-picker/picker'
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import color from '../../Util/color.js';
 import languageList from '../../Util/languageList.js';
 import { googleTranslateApi } from '../../Util/googleTranslateApi.js';
+import Result from '../ResultScreen/result.js';
 
 export default function Home(props) {
     console.log('Home component params:', props.route.params);
@@ -95,46 +96,50 @@ export default function Home(props) {
     
     useEffect(() => {
         const translateText = async () => {
-          try {
-                const GoogleCloudTranslate = async() => {
-                  const apiKey = "AIzaSyA60a6EUSAHZFh5GPwpb_KQ_ifUO5bBwtM";
-                  const apiURL = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
+        //   try {
+        //         const GoogleCloudTranslate = async() => {
+        //           const apiKey = "AIzaSyA60a6EUSAHZFh5GPwpb_KQ_ifUO5bBwtM";
+        //           const apiURL = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
               
-                  const requestData = {
-                  q: texts,
-                  target: targetLanguage, // Use the selected target language
-                  }
-                  console.log('pass to translate api:', texts);
-                  const apiResponse = await axios.post(apiURL, requestData);
-                  console.log("translation: ", apiResponse.data.data.translations);
-                  console.log("translated text: ", apiResponse.data.data.translations[0].translatedText);
-                  // setTexts(apiResponse.data.data.translations[0].translatedText)
-                  const translateResult = apiResponse.data.data.translations[0].translatedText;
-                  return translateResult;
-                  // setTranslatedText(apiResponse.data.data.translations[0].translatedText);
+        //           const requestData = {
+        //           q: texts,
+        //           target: targetLanguage, // Use the selected target language
+        //           }
+        //           console.log('pass to translate api:', texts);
+        //           const apiResponse = await axios.post(apiURL, requestData);
+        //           console.log("translation: ", apiResponse.data.data.translations);
+        //           console.log("translated text: ", apiResponse.data.data.translations[0].translatedText);
+        //           // setTexts(apiResponse.data.data.translations[0].translatedText)
+        //           const translateResult = apiResponse.data.data.translations[0].translatedText;
+        //           return translateResult;
+        //           // setTranslatedText(apiResponse.data.data.translations[0].translatedText);
                   
-                }
-                const mlTranslate = async () => {
-                  const translateResult = await TranslateText.translate({text: texts, sourceLanguage: sourceLanguage, targetLanguage: targetLanguage,downloadModelIfNeeded: true});
-                //   console.log("translated text: ", translateResult);
-                  return translateResult
-                }
+        //         }
+        //         const mlTranslate = async () => {
+        //           const translateResult = await TranslateText.translate({text: texts, sourceLanguage: sourceLanguage, targetLanguage: targetLanguage,downloadModelIfNeeded: true});
+        //         //   console.log("translated text: ", translateResult);
+        //           return translateResult
+        //         }
 
-                setIsTranslating(true);
-                let translateResult = '';
-                if(shouldUseTesseract){
-                  translateResult = await mlkitTranslate(texts, sourceLanguage, targetLanguage);
-                  setTranslatedText(translateResult);
-                  console.log('tesseract');
-                }else {
-                  try{
-                    translateResult = await googleTranslateApi(texts, targetLanguage);
-                    setTranslatedText(translateResult);
-                    console.log('google OCR');
-                  } catch (error){
-                    console.log(error);
+                try{
+                    setIsTranslating(true);
+                    let translateResult = '';
+                    if(shouldUseTesseract){
+                      translateResult = await mlkitTranslate(texts, sourceLanguage, targetLanguage);
+                      setTranslatedText(translateResult);
+                      console.log('tesseract');
+                    }else {
+                        translateResult = await googleTranslateApi(texts, targetLanguage);
+                        setTranslatedText(translateResult);
+                        console.log('google OCR');
+                    }
+
+                } catch (error) {
+                    console.error('Error translating text: ', error);
+                    alert('Error translating text. Please try again later');
+                  }finally{
+                    setIsTranslating(false);
                   }
-                }
                 //Save the translation in the history
                 const translationData = {
                     translatedText: translateResult,
@@ -145,11 +150,11 @@ export default function Home(props) {
                 console.log('image uri: ', imageUri);
                 console.log('translated result: ', translateResult);
                 setIsTranslating(false);
-          } catch (error) {
-            setIsTranslating(false);
-            console.error('Error translating text: ', error);
-            alert('Error translating text. Please try again later');
-          }
+        //   } catch (error) {
+        //     setIsTranslating(false);
+        //     console.error('Error translating text: ', error);
+        //     alert('Error translating text. Please try again later');
+        //   }
         };
 
         if (shouldTranslate && targetLanguage && texts && sourceLanguage) {
@@ -309,7 +314,7 @@ export default function Home(props) {
               <Text style={styles.label}>Source Text:</Text>
               <Text style={styles.text}>{texts}</Text>
     
-              {isTranslating ? (
+              {/* {isTranslating ? (
               <ActivityIndicator size="small" color={color.theme} />
             ) : (
               <>
@@ -320,12 +325,18 @@ export default function Home(props) {
                   </>
                 )}
               </>
-            )}
+            )} */}
             </View>
           )}
-          <View style={styles.historyContainer}>
-
-          </View>
+            <Modal visible={isTranslating} transparent>
+                <View style={styles.modalContainer}>  
+                    <ActivityIndicator size="small" color={color.theme} />
+                </View> 
+            </Modal>
+            {translatedText.length > 0 && (
+                <Result translatedText={translatedText} sourceText={texts} />
+            )}
+          <View style={styles.historyContainer}></View>
           {/* {shouldUseTesseract && (
             <Picker
               selectedValue={sourceLanguage}
