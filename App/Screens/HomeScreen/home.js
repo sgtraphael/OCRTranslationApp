@@ -6,6 +6,7 @@ import TextRecognition from '@react-native-ml-kit/text-recognition';
 import TranslateText, {TranslateLanguage} from '@react-native-ml-kit/translate-text';
 import { TranslationContext } from '../../Context/Context.js';
 import { useContext } from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 import History from '../HistoryScreen/history';
 import TabNavigation from '../../Navigations/TabNavigation';
@@ -16,17 +17,34 @@ import * as FileSystem from 'expo-file-system';
 import { AntDesign } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import color from '../../Util/color.js';
+import languageList from '../../Util/languageList.js';
 
-const Home = (props) => {
+export default function Home(props) {
+    console.log('Home component params:', props.route.params);
+    console.log('Home component props:', props);
+    
+    const route = useRoute();
+    console.log('route:', route.params);
+    const params = props.route.params || {};
     const [imageUri, setImageUri] = useState(null);
     const [texts, setTexts] = useState("");
-    const [targetLanguage, setTargetLanguage] = useState("");
+    const [targetLanguage, setTargetLanguage] = useState("fr");
     const [shouldTranslate, setShouldTranslate] = useState(false);
     const [translatedText, setTranslatedText] = useState("");
     const [shouldUseTesseract, setShouldUseTesseract] = useState(false);
-    const [sourceLanguage, setSourceLanguage] = useState("");
+    const [sourceLanguage, setSourceLanguage] = useState("en");
     const [isTranslating, setIsTranslating] = useState(false);
     // const { addToHistory } = useContext(TranslationContext);
+    useEffect(() => {
+        if (params.targetLanguage) {
+            setTargetLanguage(params.targetLanguage);
+        }
+        if (params.sourceLanguage) {
+            setSourceLanguage(params.sourceLanguage);
+        }
+        console.log('in HomeScreen, props.targetLanguage: ', params.targetLanguage);
+        console.log('in HomeScreen, props.sourceLanguage: ', params.sourceLanguage);
+    }, [params.targetLanguage, params.sourceLanguage])
 
     const toggleOCR = () => {
       setShouldUseTesseract(!shouldUseTesseract);
@@ -236,8 +254,8 @@ const Home = (props) => {
             <View style={styles.languageContainer}>
                 <TouchableOpacity 
                 style={styles.languageOptions}
-                onPress={() => props.navigation.navigate('LanguageOptions', {title: "Source Language Select"})}>
-                    <Text style={styles.languageOptionsContent}>English</Text>
+                onPress={() => props.navigation.navigate('LanguageOptions', {title: "Source Language Select", selected: sourceLanguage, direction: 'source'})}>
+                    <Text style={styles.languageOptionsContent}>{languageList[sourceLanguage]}</Text>
                 </TouchableOpacity>
 
                 <View style={styles.arrowContainer}>
@@ -246,8 +264,8 @@ const Home = (props) => {
 
                 <TouchableOpacity 
                 style={styles.languageOptions}
-                onPress={() => props.navigation.navigate('LanguageOptions', {title: "Target Language Select"})}>
-                    <Text style={styles.languageOptionsContent}>French</Text>
+                onPress={() => props.navigation.navigate('LanguageOptions', {title: "Target Language Select", selected: targetLanguage, direction: 'target'})}>
+                    <Text style={styles.languageOptionsContent}>{languageList[targetLanguage]}</Text>
                 </TouchableOpacity>
             </View> 
 
@@ -302,7 +320,7 @@ const Home = (props) => {
           <View style={styles.historyContainer}>
 
           </View>
-          {shouldUseTesseract && (
+          {/* {shouldUseTesseract && (
             <Picker
               selectedValue={sourceLanguage}
               style={styles.picker}
@@ -310,7 +328,6 @@ const Home = (props) => {
             >
               <Picker.Item label="Select source language" value="" />
               <Picker.Item label="English" value="en" />
-              {/* Add more languages as needed */}
             </Picker>
           )}
           <Picker
@@ -323,8 +340,7 @@ const Home = (props) => {
             <Picker.Item label="French" value="fr" />
             <Picker.Item label="German" value="de" />
             <Picker.Item label="Chinese" value="zh" />
-            {/* Add more languages as needed */}
-          </Picker>
+          </Picker> */}
     
           {/* {texts.length > 0 && (
             <View style={styles.resultContainer}>
@@ -351,7 +367,6 @@ const Home = (props) => {
 
 }
 
-export default Home
 const styles = StyleSheet.create({
     container: {
       flexGrow: 1,
