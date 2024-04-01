@@ -15,24 +15,23 @@ const headerBtn = props => {
     />
 }
 
-export default function languageOptions({navigation, route}) {
-    const params = route.params || {};
-    const {title, selected} = params;
+export default function languageOptions(props) {
+
 
     useEffect(() => {
-        navigation.setOptions({
-            headerTitle: title,
+        props.navigation.setOptions({
+            headerTitle: props.route.params.title,
             headerRight: () => {
                 return <HeaderButtons HeaderButtonComponent={headerBtn}>
                     <Item
                         iconName="close"
                         color={color.btnTextColor}
-                        onPress={() => navigation.goBack()}
+                        onPress={() => props.navigation.goBack()}
                     />
                 </HeaderButtons>
             }
         })
-    }, [navigation]);
+    }, [props.navigation]);
 
     // const onSelect = useCallback(itemKey => {
     //     // console.log('direction: ', params.direction);
@@ -43,12 +42,12 @@ export default function languageOptions({navigation, route}) {
     // }, [params, navigation])
 
     const onLanguageSelect = useCallback(itemKey => {
-        const dataKey = params.direction === 'target' ? 'targetLanguage' : 'sourceLanguage';
-        navigation.navigate('Home',{screen: "Home", params:{ [dataKey]: itemKey }}) //  in React Navigation v6 or later, the navigation structure has changed, and  need to specify the screen using the screen property within the params object.
+        const dataKey = props.route.params.direction === 'target' ? 'targetLanguage' : 'sourceLanguage';
+        props.navigation.navigate('Home',{screen: "Home", params:{ [dataKey]: itemKey }}) //  in React Navigation v6 or later, the navigation structure has changed, and  need to specify the screen using the screen property within the params object.
         console.log('dataKey', dataKey);
         console.log('itemKey: ', itemKey);
-        console.log('params: ', params);
-    }, [params, navigation])
+        console.log('params: ', props.route.params);
+    }, [props.route.params, props.navigation])
     
     return (
         <View style={styles.container}>
@@ -60,7 +59,7 @@ export default function languageOptions({navigation, route}) {
                     return <LanguageItem 
                                 onPress={() => onLanguageSelect(languageKey)}
                                 text={languageString} 
-                                selected={languageKey===selected}
+                                selected={languageKey===props.route.params.selected}
                                 langKey = {languageKey}
                             />
                 }}
