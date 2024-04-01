@@ -16,7 +16,7 @@
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splashscreen.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "assetBundlePatterns": [
