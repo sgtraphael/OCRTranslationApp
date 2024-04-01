@@ -9,6 +9,7 @@ import { useContext } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import uuid from 'react-native-uuid';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 import History from '../HistoryScreen/history';
@@ -26,9 +27,22 @@ import color from '../../Util/color.js';
 import languageList from '../../Util/languageList.js';
 import { googleTranslateApi } from '../../Util/googleTranslateApi.js';
 import Result from '../ResultScreen/result.js';
-import { addHistoryItem } from '../../store/historySlice.js';
+import { addHistoryItem, setHistoryItems } from '../../store/historySlice.js';
 import TranslationHistoryItem from '../../components/TranslationHistoryItem.js';
 
+const retrieveData = () => {
+    return async dispatch => {
+        try {
+            const historyStr = await AsyncStorage.getItem('history')
+            if(historyStr !== null) {
+                const history = JSON.parse(historyStr);
+                dispatch(setHistoryItems({items: history}));
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+}
 export default function Home(props) {
     console.disableYellowBox = true;// temporarilty disable warning msgs
 
@@ -207,6 +221,21 @@ export default function Home(props) {
         await Clipboard.setStringAsync(translatedText);
         alert('Text copied to clipboard');
     }, [translatedText]);
+
+    useEffect(() => {
+        dispatch(retrieveData());
+    }, [dispatch])
+    // save history to long-term storage
+    useEffect(() => {
+        const saveHistory = async() => {
+            try {
+                await AsyncStorage.setItem('history', JSON.stringify(history));
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        saveHistory();
+    }, [history]);
     const analyzeImage = async () => {
         try{
             if (!imageUri) {
@@ -402,7 +431,7 @@ export default function Home(props) {
 
           <View style={styles.historyContainer}>
             <FlatList
-                data={history}
+                data={history.slice().reverse()}//create copy and render in reverse order
                 renderItem={itemData => {
                     return <TranslationHistoryItem itemId={itemData.item.id}/>
                 }}
