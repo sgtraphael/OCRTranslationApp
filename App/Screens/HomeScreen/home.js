@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch, Se
 import {Picker} from '@react-native-picker/picker'
 import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios';
-import TextRecognition from '@react-native-ml-kit/text-recognition';
+import TextRecognition, { TextRecognitionScript } from '@react-native-ml-kit/text-recognition';
 import TranslateText, {TranslateLanguage} from '@react-native-ml-kit/translate-text';
 import { TranslationContext } from '../../Context/Context.js';
 import { useContext } from 'react';
@@ -30,6 +30,8 @@ import Result from '../ResultScreen/result.js';
 import { addHistoryItem, setHistoryItems } from '../../store/historySlice.js';
 import TranslationHistoryItem from '../../components/TranslationHistoryItem.js';
 import { setSaved } from '../../store/savedSlice.js';
+import {LinearGradient} from 'expo-linear-gradient';
+import languageListOffline from '../../Util/languageListOffline.js';
 
 const retrieveData = () => {
     return async dispatch => {
@@ -54,13 +56,13 @@ export default function Home(props) {
 
     const dispatch = useDispatch();
     const history = useSelector(state => state.history.items);
-    console.log('history:', history);
+    // console.log('history:', history);
     
-    console.log('Home component params:', props.route.params);
-    console.log('Home component props:', props);
+    // console.log('Home component params:', props.route.params);
+    // console.log('Home component props:', props);
     
     const route = useRoute();
-    console.log('route:', route.params);
+    // console.log('route:', route.params);
     const params = props.route.params || {};
     const [imageUri, setImageUri] = useState(null);
     const [texts, setTexts] = useState("");
@@ -79,8 +81,8 @@ export default function Home(props) {
         if (params.sourceLanguage) {
             setSourceLanguage(params.sourceLanguage);
         }
-        console.log('in HomeScreen, props.targetLanguage: ', params.targetLanguage);
-        console.log('in HomeScreen, props.sourceLanguage: ', params.sourceLanguage);
+        // console.log('in HomeScreen, props.targetLanguage: ', params.targetLanguage);
+        // console.log('in HomeScreen, props.sourceLanguage: ', params.sourceLanguage);
     }, [params.targetLanguage, params.sourceLanguage])
 
     const toggleOCR = () => {
@@ -99,7 +101,7 @@ export default function Home(props) {
         if(!result.canceled) {
             setImageUri(result.assets[0].uri);
         }
-        console.log(result);
+        // console.log(result);
         }catch (error){
             console.error('Error Picking Image: ', error);
         }
@@ -121,7 +123,7 @@ export default function Home(props) {
             if (!result.cancelled) {
               setImageUri(result.uri);
             }
-            console.log(result);
+            // console.log(result);
           }
       } catch (error) {
         console.error('Error Taking Photo: ', error);
@@ -170,11 +172,11 @@ export default function Home(props) {
                     if(shouldUseTesseract){
                       translateResult = await mlkitTranslate(texts, sourceLanguage, targetLanguage);
                       setTranslatedText(translateResult);
-                      console.log('tesseract');
+                    //   console.log('tesseract');
                     }else {
                         translateResult = await googleTranslateApi(texts, targetLanguage);
                         setTranslatedText(translateResult);
-                        console.log('google OCR');
+                        // console.log('google OCR');
                     }
                     //dispatch action
                     const id = uuid.v4(); //id for translateResult Objects
@@ -200,8 +202,8 @@ export default function Home(props) {
                 };
                 // addToHistory(translationData);
                 // console.log('translation history: ', translationHistory);
-                console.log('image uri: ', imageUri);
-                console.log('translated result: ', translateText);
+                // console.log('image uri: ', imageUri);
+                // console.log('translated result: ', translateText);
                 setIsTranslating(false);
         //   } catch (error) {
         //     setIsTranslating(false);
@@ -302,8 +304,17 @@ export default function Home(props) {
 
             //OCR using tesseract
             const mlAnalyze = async () => {
+            let script;
+              if (sourceLanguage === 'zh') {
+                script = TextRecognitionScript.CHINESE;
+              } else if (sourceLanguage === 'en') {
+                script = TextRecognitionScript.LATIN;
+              } else if (sourceLanguage === 'hi') {
+                script = TextRecognitionScript.DEVANAGARI;
+              }
+              script = script || TextRecognitionScript.LATIN
               const recognizedText = await TextRecognition.recognize(
-                imageUri
+                imageUri, script
               );
               return recognizedText;
             };
@@ -315,176 +326,181 @@ export default function Home(props) {
             if (shouldUseTesseract) {
               extractedTextFromMl = await mlAnalyze();
               const fullText = extractedTextFromMl.text;
-              console.log('full text',fullText);
+              console.log('text extracted: ',fullText);
               setTexts(fullText);
+              console.log('Mode: used RNML');
             } else {
               extractedTextFromGoogle = await GoogleCloudVisionApiAnalyze();
               setTexts(extractedTextFromGoogle);
+              console.log('Mode: used GCV');
             }
+            
         
             // setTexts(extractedText);
             // console.log('textAnnotation: ', extractedText);
-            // console.log("text extracted: ", texts);
+            // console.log('texts: ', texts);
             setShouldTranslate(true);
-            console.log('texts', texts);
-            console.log('translated Text', translatedText);
+            // console.log('texts', texts);
+            // console.log('translated Text', translatedText);
 
         } catch(error){
             console.error('Error analyzing image: ', error);
             alert('Error analyzing image. Please try again later');
         }
     };
-
+    console.log('text extracted: ', texts);
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <View style={styles.languageContainer}>
-                <TouchableOpacity 
-                style={styles.languageOptions}
-                onPress={() => props.navigation.navigate('LanguageOptions', {title: "Source Language Select", selected: sourceLanguage, direction: 'source', appMode: shouldUseTesseract})}>
-                    <Text style={styles.languageOptionsContent}>{languageList[sourceLanguage]}</Text>
-                </TouchableOpacity>
+       // <LinearGradient style={styles.container} start={{x:0.5, y:0}} end={{x:0.5, y:1}} locations={[0,0.5,1]} colors={['#764BA2', '#667EEA']}>
+            <ScrollView contentContainerStyle={styles.container}>
+                <View style={styles.languageContainer}>
+                    <TouchableOpacity 
+                    style={styles.languageOptions}
+                    onPress={() => props.navigation.navigate('LanguageOptions', {title: "Source Language Select", selected: sourceLanguage, direction: 'source', appMode: shouldUseTesseract})}>
+                        <Text style={styles.languageOptionsContent}>{languageList[sourceLanguage]}</Text>
+                    </TouchableOpacity>
 
-                <View style={styles.arrowContainer}>
-                    <AntDesign name="arrowright" size={24} color={color.lightGrey} />
-                </View>
+                    <View style={styles.arrowContainer}>
+                        <AntDesign name="arrowright" size={24} color={color.lightGrey} />
+                    </View>
 
-                <TouchableOpacity 
-                style={styles.languageOptions}
-                onPress={() => props.navigation.navigate('LanguageOptions', {title: "Target Language Select", selected: targetLanguage, direction: 'target', appMode: shouldUseTesseract})}>
-                    <Text style={styles.languageOptionsContent}>{languageList[targetLanguage]}</Text>
-                </TouchableOpacity>
-            </View> 
-
-          {/* <TabNavigation translationHistory={translationHistory} /> */}
-          {imageUri && (
-            <Image source={{ uri: imageUri }} style={styles.image} />
-          )}
-
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={takePhoto} style={styles.button}>
-                <AntDesign name="camera" size={24} color={color.theme} />
-                <Text style={styles.buttonText}>Photo</Text>   
-            </TouchableOpacity>
-            <TouchableOpacity onPress={pickImage} style={styles.button}>
-                <Ionicons name="albums-sharp" size={24} color={color.theme} />
-                <Text style={styles.buttonText}>Album</Text>
-            </TouchableOpacity>
-        
-            <TouchableOpacity onPress={isTranslating? undefined : analyzeImage} style={styles.button}>
-                <Ionicons name="arrow-forward-circle-sharp" size={24} color={color.theme} />
-                <Text style={styles.buttonText}>Translate</Text>
-            </TouchableOpacity>
-            {/* <TouchableOpacity onPress={()=> {handleSubmit(); 
-                props.navigation.navigate('Result', 
-                {title:'Result', sourceText:texts, translatedText:translatedText, isTranslating:isTranslating}
-                )}} style={styles.button}>
-                <Ionicons name="arrow-forward-circle-sharp" size={24} color={color.theme} />
-                <Text style={styles.buttonText}>Translate</Text>
-            </TouchableOpacity> */}
-          </View>
-
-          {/* <TouchableOpacity onPress={}>Save Results</TouchableOpacity> */}
-          <View>
-            <Text>Offline Mode: {shouldUseTesseract ? 'On' : 'Off'}</Text>
-            <Switch
-              value={shouldUseTesseract}
-              onValueChange={toggleOCR}
-            />
-          </View>
-          {/* {texts.length > 0 && (
-            <View style={styles.resultContainer}>
-              <Text style={styles.label}>Source Text:</Text>
-              <Text style={styles.text}>{texts}</Text>
-    
-              {isTranslating ? (
-              <ActivityIndicator size="small" color={color.theme} />
-            ) : (
-              <>
-                {translatedText && (
-                  <>
-                    <Text style={styles.label}>Translated Text:</Text>
-                    <Text Text style={styles.text}>{translatedText}</Text>
-                  </>
-                )}
-              </>
-            )}
-            </View>
-          )} */}
-            <Modal visible={showModal} animationType='slide'>
-                <View style={styles.modalContainer}>
-                {isTranslating ? (
-                        <ActivityIndicator size="small" color={color.theme} />
-                    ) : (
-                        <>
-                            
-                            <Text style={styles.modalText}>Original: {texts}</Text>
-                            <View style={styles.resultContainer}>
-                            <Text style={styles.modalText}>Translation: {translatedText}</Text>
-                                <TouchableOpacity onPress={copyToClipboard} style={styles.iconContainer}>
-                                    <MaterialIcons name="content-copy" size={24} color="black" />
-                                </TouchableOpacity>
-                            </View>
-                            <Button title="Close" onPress={closeModal} />
-                        </>
-                    )}
+                    <TouchableOpacity 
+                    style={styles.languageOptions}
+                    onPress={() => props.navigation.navigate('LanguageOptions', {title: "Target Language Select", selected: targetLanguage, direction: 'target', appMode: shouldUseTesseract})}>
+                        <Text style={styles.languageOptionsContent}>{languageList[targetLanguage]}</Text>
+                    </TouchableOpacity>
                 </View> 
-            </Modal>
 
-            {/* {translatedText.length > 0 && (
-                <Result translatedText={translatedText} sourceText={texts} />
-            )} */}
-
-          <View style={styles.historyContainer}>
-            <FlatList
-                data={history.slice().reverse()}//create copy and render in reverse order
-                renderItem={itemData => {
-                    return <TranslationHistoryItem itemId={itemData.item.id}/>
-                }}
-            />
-          </View>
-          {/* {shouldUseTesseract && (
-            <Picker
-              selectedValue={sourceLanguage}
-              style={styles.picker}
-              onValueChange={(itemValue, itemIndex) => setSourceLanguage(itemValue)}
-            >
-              <Picker.Item label="Select source language" value="" />
-              <Picker.Item label="English" value="en" />
-            </Picker>
-          )}
-          <Picker
-            selectedValue={targetLanguage}
-            style={styles.picker}
-            onValueChange={(itemValue, itemIndex) => setTargetLanguage(itemValue)}
-          >
-            <Picker.Item label="Select target language" value="" />
-            <Picker.Item label="Spanish" value="es" />
-            <Picker.Item label="French" value="fr" />
-            <Picker.Item label="German" value="de" />
-            <Picker.Item label="Chinese" value="zh" />
-          </Picker> */}
-    
-          {/* {texts.length > 0 && (
-            <View style={styles.resultContainer}>
-              <Text style={styles.label}>Extracted Text:</Text>
-              <Text style={styles.text}>{texts}</Text>
-    
-              {isTranslating ? (
-              <ActivityIndicator size="large" color="#0000ff" />
-            ) : (
-              <>
-                {translatedText && (
-                  <>
-                    <Text style={{ marginTop: 10, fontWeight: 'bold' }}>Translated Text:</Text>
-                    <Text>{translatedText}</Text>
-                  </>
-                )}
-              </>
+            {/* <TabNavigation translationHistory={translationHistory} /> */}
+            {imageUri && (
+                <Image source={{ uri: imageUri }} style={styles.image} />
             )}
+
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity onPress={takePhoto} style={styles.button}>
+                    <AntDesign name="camera" size={24} color={color.theme} />
+                    <Text style={styles.buttonText}>Photo</Text>   
+                </TouchableOpacity>
+                <TouchableOpacity onPress={pickImage} style={styles.button}>
+                    <Ionicons name="albums-sharp" size={24} color={color.theme} />
+                    <Text style={styles.buttonText}>Album</Text>
+                </TouchableOpacity>
+            
+                <TouchableOpacity onPress={isTranslating? undefined : analyzeImage} style={styles.button}>
+                    <Ionicons name="arrow-forward-circle-sharp" size={24} color={color.theme} />
+                    <Text style={styles.buttonText}>Translate</Text>
+                </TouchableOpacity>
+                {/* <TouchableOpacity onPress={()=> {handleSubmit(); 
+                    props.navigation.navigate('Result', 
+                    {title:'Result', sourceText:texts, translatedText:translatedText, isTranslating:isTranslating}
+                    )}} style={styles.button}>
+                    <Ionicons name="arrow-forward-circle-sharp" size={24} color={color.theme} />
+                    <Text style={styles.buttonText}>Translate</Text>
+                </TouchableOpacity> */}
             </View>
-          )} */}
-        </ScrollView>
+
+            {/* <TouchableOpacity onPress={}>Save Results</TouchableOpacity> */}
+            <View style={styles.buttonContainer}>
+                <Text style={styles.buttonText}>Offline Mode: {shouldUseTesseract ? 'On' : 'Off'}</Text>
+                <Switch
+                value={shouldUseTesseract}
+                onValueChange={toggleOCR}
+                />
+            </View>
+            {/* {texts.length > 0 && (
+                <View style={styles.resultContainer}>
+                <Text style={styles.label}>Source Text:</Text>
+                <Text style={styles.text}>{texts}</Text>
+        
+                {isTranslating ? (
+                <ActivityIndicator size="small" color={color.theme} />
+                ) : (
+                <>
+                    {translatedText && (
+                    <>
+                        <Text style={styles.label}>Translated Text:</Text>
+                        <Text Text style={styles.text}>{translatedText}</Text>
+                    </>
+                    )}
+                </>
+                )}
+                </View>
+            )} */}
+                <Modal visible={showModal} animationType='slide'>
+                    <ScrollView style={styles.modalContainer}>
+                    {isTranslating ? (
+                            <ActivityIndicator size="small" color={color.theme} />
+                        ) : (
+                            <>
+                                
+                                <Text style={styles.modalText}>Original: {texts}</Text>
+                                <View style={styles.resultContainer}>
+                                <Text style={styles.modalText}>Translation: {translatedText}</Text>
+                                    <TouchableOpacity onPress={copyToClipboard} style={styles.iconContainer}>
+                                        <MaterialIcons name="content-copy" size={24} color="black" />
+                                    </TouchableOpacity>
+                                </View>
+                                <Button title="Close" onPress={closeModal} />
+                            </>
+                        )}
+                    </ScrollView> 
+                </Modal>
+
+                {/* {translatedText.length > 0 && (
+                    <Result translatedText={translatedText} sourceText={texts} />
+                )} */}
+
+            <View style={styles.historyContainer}>
+                <FlatList
+                    data={history.slice().reverse()}//create copy and render in reverse order
+                    renderItem={itemData => {
+                        return <TranslationHistoryItem itemId={itemData.item.id}/>
+                    }}
+                />
+            </View>
+            {/* {shouldUseTesseract && (
+                <Picker
+                selectedValue={sourceLanguage}
+                style={styles.picker}
+                onValueChange={(itemValue, itemIndex) => setSourceLanguage(itemValue)}
+                >
+                <Picker.Item label="Select source language" value="" />
+                <Picker.Item label="English" value="en" />
+                </Picker>
+            )}
+            <Picker
+                selectedValue={targetLanguage}
+                style={styles.picker}
+                onValueChange={(itemValue, itemIndex) => setTargetLanguage(itemValue)}
+            >
+                <Picker.Item label="Select target language" value="" />
+                <Picker.Item label="Spanish" value="es" />
+                <Picker.Item label="French" value="fr" />
+                <Picker.Item label="German" value="de" />
+                <Picker.Item label="Chinese" value="zh" />
+            </Picker> */}
+        
+            {/* {texts.length > 0 && (
+                <View style={styles.resultContainer}>
+                <Text style={styles.label}>Extracted Text:</Text>
+                <Text style={styles.text}>{texts}</Text>
+        
+                {isTranslating ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+                ) : (
+                <>
+                    {translatedText && (
+                    <>
+                        <Text style={{ marginTop: 10, fontWeight: 'bold' }}>Translated Text:</Text>
+                        <Text>{translatedText}</Text>
+                    </>
+                    )}
+                </>
+                )}
+                </View>
+            )} */}
+            </ScrollView>
+        //</LinearGradient>
         
       );
 
@@ -546,16 +562,17 @@ const styles = StyleSheet.create({
     },
     button: {
       backgroundColor: color.lightGrey,
+      marginHorizontal:2,
       paddingVertical: 10,
       paddingHorizontal: 20,
-      borderRadius: 5,
+      borderRadius: 20,
       alignItems: 'center',
       justifyContent: 'center',
       height:120,
       width:120
     },
     buttonText: {
-      fontSize: 18,
+      fontSize: 13,
       fontFamily: 'Bold',
       letterSpacing: 0.2,
       color: color.btnTextColor,

@@ -3,4 +3,5 @@ export default {
     da: "Danish",
     nl: "Dutch",
     en: "English",
+    "zh": "Chinese (Traditional)",
 }

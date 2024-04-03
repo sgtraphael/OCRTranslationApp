@@ -8,6 +8,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import TabNavigation from './App/Navigations/TabNavigation';
 import { TranslationProvider } from './App/Context/Context';
 import * as Font from 'expo-font';
+import { Entypo } from '@expo/vector-icons';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -33,18 +34,18 @@ const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => {
   return (
-    <Tab.Navigator screenOptions={{headerShown:false, tabBarActiveTintColor:"purple"}}>
+    <Tab.Navigator screenOptions={{headerShown:false, tabBarActiveTintColor:'#964EC2'}}>
       <Tab.Screen name="Home" component={Home} options={{
         tabBarLabel:({color})=>(
             <Text style={{color:color, fontSize:12, marginTop:-7}}>Home</Text>
         ),
-        tabBarIcon:(props)=> <AntDesign name="home" size={props.size} color={props.color} />
+        tabBarIcon:(props)=> <Entypo name="home" size={props.size} color={props.color} />
       }}/>
       <Tab.Screen name="Saved" component={Saved} options={{
         tabBarLabel:({color})=>(
             <Text style={{color:color, fontSize:12, marginTop:-7}}>Saved</Text>
         ),
-        tabBarIcon:(props)=><FontAwesome name="star-o" size={props.size} color={props.color} />
+        tabBarIcon:(props)=><FontAwesome name="star" size={props.size} color={props.color} />
       }}/>
       <Tab.Screen name="Setting" component={Setting} options={{
         tabBarLabel:({color})=>(
