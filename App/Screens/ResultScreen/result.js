@@ -37,7 +37,7 @@ const headerBtn = props => {
 export default function Result(props) {
     const [translatedText, setTranslatedText] = useState('');
     const [sourceText, setSourceText] = useState('');
-    console.log('result.js->props: ', props);
+    // console.log('result.js->props: ', props);
 
     useEffect(() => {
         props.navigation.setOptions({

@@ -33,7 +33,7 @@ const TextExtraction = () => {
         if(!result.canceled) {
             setImageUri(result.assets[0].uri);
         }
-        console.log(result);
+        // console.log(result);
         }catch (error){
             console.error('Error Picking Image: ', error);
         }
@@ -55,7 +55,7 @@ const TextExtraction = () => {
             if (!result.cancelled) {
               setImageUri(result.uri);
             }
-            console.log(result);
+            // console.log(result);
           }
       } catch (error) {
         console.error('Error Taking Photo: ', error);
@@ -73,10 +73,10 @@ const TextExtraction = () => {
                   q: texts,
                   target: targetLanguage, // Use the selected target language
                   }
-                  console.log('pass to translate api:', texts);
+                  // console.log('pass to translate api:', texts);
                   const apiResponse = await axios.post(apiURL, requestData);
-                  console.log("translation: ", apiResponse.data.data.translations);
-                  console.log("translated text: ", apiResponse.data.data.translations[0].translatedText);
+                  // console.log("translation: ", apiResponse.data.data.translations);
+                  // console.log("translated text: ", apiResponse.data.data.translations[0].translatedText);
                   // setTexts(apiResponse.data.data.translations[0].translatedText)
                   const translateResult = apiResponse.data.data.translations[0].translatedText;
                   return translateResult;
@@ -85,7 +85,7 @@ const TextExtraction = () => {
                 }
                 const mlTranslate = async () => {
                   const translateResult = await TranslateText.translate({text: texts, sourceLanguage: sourceLanguage, targetLanguage: targetLanguage,downloadModelIfNeeded: true});
-                  console.log("translated text: ", translateResult);
+                  // console.log("translated text: ", translateResult);
                   return translateResult
                 }
 
@@ -107,8 +107,8 @@ const TextExtraction = () => {
         };
 
         if (shouldTranslate && targetLanguage && texts && sourceLanguage) {
-          console.log('selected language', targetLanguage);
-          console.log('text in useEffect IF: ', texts);
+          // console.log('selected language', targetLanguage);
+          // console.log('text in useEffect IF: ', texts);
           translateText();
           setShouldTranslate(false);
         }
@@ -187,7 +187,7 @@ const TextExtraction = () => {
             if (shouldUseTesseract) {
               extractedTextFromMl = await mlAnalyze();
               const fullText = extractedTextFromMl.text;
-              console.log('full text',fullText);
+              // console.log('full text',fullText);
               setTexts(fullText);
             } else {
               extractedTextFromGoogle = await GoogleCloudVisionApiAnalyze();

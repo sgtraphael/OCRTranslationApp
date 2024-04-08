@@ -32,6 +32,8 @@ import TranslationHistoryItem from '../../components/TranslationHistoryItem.js';
 import { setSaved } from '../../store/savedSlice.js';
 import {LinearGradient} from 'expo-linear-gradient';
 import languageListOffline from '../../Util/languageListOffline.js';
+import calcCER from 'character-error-rate';
+
 
 const retrieveData = () => {
     return async dispatch => {
@@ -56,7 +58,7 @@ export default function Home(props) {
 
     const dispatch = useDispatch();
     const history = useSelector(state => state.history.items);
-    // console.log('history:', history);
+    console.log('history:', history);
     
     // console.log('Home component params:', props.route.params);
     // console.log('Home component props:', props);
@@ -213,8 +215,8 @@ export default function Home(props) {
         };
 
         if (shouldTranslate && targetLanguage && texts && sourceLanguage) {
-          console.log('selected language', targetLanguage);
-          console.log('text in useEffect IF: ', texts);
+        //   console.log('selected language', targetLanguage);
+        //   console.log('text in useEffect IF: ', texts);
           translateText();
           setShouldTranslate(false);
         }
@@ -326,13 +328,13 @@ export default function Home(props) {
             if (shouldUseTesseract) {
               extractedTextFromMl = await mlAnalyze();
               const fullText = extractedTextFromMl.text;
-              console.log('text extracted: ',fullText);
+            //   console.log('text extracted: ',fullText);
               setTexts(fullText);
-              console.log('Mode: used RNML');
+            //   console.log('Mode: used RNML');
             } else {
               extractedTextFromGoogle = await GoogleCloudVisionApiAnalyze();
               setTexts(extractedTextFromGoogle);
-              console.log('Mode: used GCV');
+            //   console.log('Mode: used GCV');
             }
             
         
@@ -349,6 +351,8 @@ export default function Home(props) {
         }
     };
     console.log('text extracted: ', texts);
+    console.log('text translated', translatedText);
+    console.log('CER: ', calcCER("A man who went missing in Sham Shui Po has been located. Yip Hing-shing, aged 48, went missing after he was last seen on Ki Lung Street on March 30 afternoon. His family made a report to Police on the same day. The man was located on Lai Chi Kok Road last night (April 2). He sustained no injuries and no suspicious circumstances were detected. Ends/Wednesday, April 3, 2024 Issued at HKT 12:10", "A man who was missing in deep water ingredients was put on. Forty-€ 1 year old man Qingzheng in the afternoon of March 30 afternoon in the corpus of the Christung Street after the closed, the family to the vowillaration. The man was founded last night (April 2) Went Like Treadya. He did not injury, the case has suspicious. Ends / Wednesday, April 3, 2012 (Hong Kong) Hong Kong time 12:10", false, false));
 
     return (
        // <LinearGradient style={styles.container} start={{x:0.5, y:0}} end={{x:0.5, y:1}} locations={[0,0.5,1]} colors={['#764BA2', '#667EEA']}>

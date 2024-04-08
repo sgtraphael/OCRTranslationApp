@@ -55,9 +55,9 @@ export default function languageOptions(props) {
     const onLanguageSelect = useCallback(itemKey => {
         const dataKey = props.route.params.direction === 'target' ? 'targetLanguage' : 'sourceLanguage';
         props.navigation.navigate('Home',{screen: "Home", params:{ [dataKey]: itemKey }}) //  in React Navigation v6 or later, the navigation structure has changed, and  need to specify the screen using the screen property within the params object.
-        console.log('dataKey', dataKey);
-        console.log('itemKey: ', itemKey);
-        console.log('params: ', props.route.params);
+        // console.log('dataKey', dataKey);
+        // console.log('itemKey: ', itemKey);
+        // console.log('params: ', props.route.params);
     }, [props.route.params, props.navigation])
     
     return (

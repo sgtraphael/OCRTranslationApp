@@ -5,7 +5,7 @@ import { TranslationContext } from '../../Context/Context.js';
 
 const History = () => {
     const { translationHistory, removeFromHistory } = useContext(TranslationContext);
-    console.log('History.js -> translationHistory:', translationHistory);
+    // console.log('History.js -> translationHistory:', translationHistory);
   // Implement the logic to display the translation history cards
   const handleCardClick = (index) => {
     // Enlarge the card and show the full-sized image with translated text
