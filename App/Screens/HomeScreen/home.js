@@ -73,7 +73,7 @@ export default function Home(props) {
     const [targetLanguage, setTargetLanguage] = useState("fr");
     const [shouldTranslate, setShouldTranslate] = useState(false);
     const [translatedText, setTranslatedText] = useState("");
-    const [shouldUseTesseract, setShouldUseTesseract] = useState(false);
+    const [enableOfflineMode, setEnableOfflineMode] = useState(false);
     const [sourceLanguage, setSourceLanguage] = useState("en");
     const [isTranslating, setIsTranslating] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -90,7 +90,7 @@ export default function Home(props) {
     }, [params.targetLanguage, params.sourceLanguage])
 
     const toggleOCR = () => {
-      setShouldUseTesseract(!shouldUseTesseract);
+      setEnableOfflineMode(!enableOfflineMode);
     };
 
     const pickImage = async () => {
@@ -172,7 +172,7 @@ export default function Home(props) {
                     //         isTranslating: isTranslating
                     //     },
                     //   });
-                    if(shouldUseTesseract){
+                    if(enableOfflineMode){
                       translateResult = await mlkitTranslate(texts, sourceLanguage, targetLanguage);
                       setTranslatedText(translateResult);
                     //   console.log('tesseract');
@@ -324,7 +324,7 @@ export default function Home(props) {
             let extractedTextFromMl = [];
 
             // Choose the OCR engine based on a condition
-            if (shouldUseTesseract) {
+            if (enableOfflineMode) {
               extractedTextFromMl = await mlAnalyze();
               const fullText = extractedTextFromMl.text;
             //   console.log('text extracted: ',fullText);
@@ -351,6 +351,7 @@ export default function Home(props) {
     };
     console.log('text extracted: ', texts);
     console.log('text translated', translatedText);
+    console.log('offline mode: ', enableOfflineMode);
     // console.log('CER: ', calcCER("A man who went missing in Sham Shui Po has been located. Yip Hing-shing, aged 48, went missing after he was last seen on Ki Lung Street on March 30 afternoon. His family made a report to Police on the same day. The man was located on Lai Chi Kok Road last night (April 2). He sustained no injuries and no suspicious circumstances were detected. Ends/Wednesday, April 3, 2024 Issued at HKT 12:10", "A man who was missing in deep water ingredients was put on. Forty-€ 1 year old man Qingzheng in the afternoon of March 30 afternoon in the corpus of the Christung Street after the closed, the family to the vowillaration. The man was founded last night (April 2) Went Like Treadya. He did not injury, the case has suspicious. Ends / Wednesday, April 3, 2012 (Hong Kong) Hong Kong time 12:10", false, false));
 
     return (
@@ -359,8 +360,8 @@ export default function Home(props) {
                 <View style={styles.languageContainer}>
                     <TouchableOpacity 
                     style={styles.languageOptions}
-                    onPress={() => props.navigation.navigate('LanguageOptions', {title: "Source Language Select", selected: sourceLanguage, direction: 'source', appMode: shouldUseTesseract})}>
-                        <Text style={styles.languageOptionsContent}>{shouldUseTesseract ? languageListOffline[sourceLanguage] : languageList[sourceLanguage]}</Text>
+                    onPress={() => props.navigation.navigate('LanguageOptions', {title: "Source Language Select", selected: sourceLanguage, direction: 'source', appMode: enableOfflineMode})}>
+                        <Text style={styles.languageOptionsContent}>{enableOfflineMode ? languageListOffline[sourceLanguage] : languageList[sourceLanguage]}</Text>
                     </TouchableOpacity>
 
                     <View style={styles.arrowContainer}>
@@ -369,7 +370,7 @@ export default function Home(props) {
 
                     <TouchableOpacity 
                     style={styles.languageOptions}
-                    onPress={() => props.navigation.navigate('LanguageOptions', {title: "Target Language Select", selected: targetLanguage, direction: 'target', appMode: shouldUseTesseract})}>
+                    onPress={() => props.navigation.navigate('LanguageOptions', {title: "Target Language Select", selected: targetLanguage, direction: 'target', appMode: enableOfflineMode})}>
                         <Text style={styles.languageOptionsContent}>{languageList[targetLanguage]}</Text>
                     </TouchableOpacity>
                 </View> 
@@ -404,9 +405,9 @@ export default function Home(props) {
 
             {/* <TouchableOpacity onPress={}>Save Results</TouchableOpacity> */}
             <View style={styles.buttonContainer}>
-                <Text style={styles.buttonText}>Offline Mode: {shouldUseTesseract ? 'On ' : 'Off '}</Text>
+                <Text style={styles.buttonText}>Offline Mode: {enableOfflineMode ? 'On ' : 'Off '}</Text>
                 <Switch
-                value={shouldUseTesseract}
+                value={enableOfflineMode}
                 onValueChange={toggleOCR}
                 />
             </View>
