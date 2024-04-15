@@ -34,6 +34,8 @@ import {LinearGradient} from 'expo-linear-gradient';
 import languageListOffline from '../../Util/languageListOffline.js';
 import calcCER from 'character-error-rate';
 
+import {VISION_API_KEY} from '@env'
+
 
 const retrieveData = () => {
     return async dispatch => {
@@ -136,7 +138,6 @@ export default function Home(props) {
         const translateText = async () => {
         //   try {
         //         const GoogleCloudTranslate = async() => {
-        //           const apiKey = "AIzaSyA60a6EUSAHZFh5GPwpb_KQ_ifUO5bBwtM";
         //           const apiURL = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
               
         //           const requestData = {
@@ -255,7 +256,7 @@ export default function Home(props) {
             
             const GoogleCloudVisionApiAnalyze = async() => {
               // Google Cloud Vision API Key
-              const apiKey = "AIzaSyA60a6EUSAHZFh5GPwpb_KQ_ifUO5bBwtM";
+              const apiKey = VISION_API_KEY;
               const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
 
               //read image from local URI and convert to base64
@@ -278,8 +279,6 @@ export default function Home(props) {
               return extractedText;
             };
             // Google Cloud Vision API Key
-            // const apiKey = "AIzaSyA60a6EUSAHZFh5GPwpb_KQ_ifUO5bBwtM";
-            // const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
 
             // //read image from local URI and convert to base64
             // const base64ImageData = await FileSystem.readAsStringAsync(imageUri, {
@@ -361,7 +360,7 @@ export default function Home(props) {
                     <TouchableOpacity 
                     style={styles.languageOptions}
                     onPress={() => props.navigation.navigate('LanguageOptions', {title: "Source Language Select", selected: sourceLanguage, direction: 'source', appMode: shouldUseTesseract})}>
-                        <Text style={styles.languageOptionsContent}>{languageList[sourceLanguage]}</Text>
+                        <Text style={styles.languageOptionsContent}>{shouldUseTesseract ? languageListOffline[sourceLanguage] : languageList[sourceLanguage]}</Text>
                     </TouchableOpacity>
 
                     <View style={styles.arrowContainer}>
@@ -483,28 +482,8 @@ export default function Home(props) {
                 <Picker.Item label="German" value="de" />
                 <Picker.Item label="Chinese" value="zh" />
             </Picker> */}
-        
-            {/* {texts.length > 0 && (
-                <View style={styles.resultContainer}>
-                <Text style={styles.label}>Extracted Text:</Text>
-                <Text style={styles.text}>{texts}</Text>
-        
-                {isTranslating ? (
-                <ActivityIndicator size="large" color="#0000ff" />
-                ) : (
-                <>
-                    {translatedText && (
-                    <>
-                        <Text style={{ marginTop: 10, fontWeight: 'bold' }}>Translated Text:</Text>
-                        <Text>{translatedText}</Text>
-                    </>
-                    )}
-                </>
-                )}
-                </View>
-            )} */}
+
             </ScrollView>
-        //</LinearGradient>
         
       );
 
@@ -640,40 +619,3 @@ const styles = StyleSheet.create({
     },
   });
   
-
-// const styles = StyleSheet.create({
-//     container: {
-//       flex: 1,
-//       backgroundColor: '#fff',
-//       //alignItems: 'center',
-//       justifyContent: 'center',
-//     },
-//     title: {
-//         fontSize: 30,
-//         fontWeight: 'bold',
-//         marginBottom: 50,
-//         marginTop: 100,
-
-//     },
-//     button:{
-//         backgroundColor: 'DDDDDD',
-//         padding: 10,
-//         marginBottom: 10,
-//         marginTop: 20,
-
-//     },
-//     text:{
-//         fontSize: 20,
-//         fontWeight: 'bold',
-
-//     },
-//     label:{
-//         fontSize: 20,
-//         fontWeight: 'bold',
-//         marginTop: 20,
-//     },
-//     outputText: {
-//         fontSize: 18,
-//         marginBottom: 10,
-//     }
-//   });

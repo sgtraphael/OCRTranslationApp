@@ -1,6 +1,8 @@
 import axios from 'axios';
+import {TRANSLATE_API_KEY} from '@env'
+
 export const googleTranslateApi = async(texts, targetLanguage) => {
-    const apiKey = "AIzaSyA60a6EUSAHZFh5GPwpb_KQ_ifUO5bBwtM";
+    const apiKey = TRANSLATE_API_KEY;
     const apiURL = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
 
     const requestData = {
