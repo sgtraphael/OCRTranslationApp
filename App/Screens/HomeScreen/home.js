@@ -1,0 +1,492 @@
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch, Settings, ActivityIndicator, Button, Modal, FlatList} from 'react-native'
+import React, { useState, useEffect, useCallback } from 'react'
+import axios from 'axios';
+import TextRecognition, { TextRecognitionScript } from '@react-native-ml-kit/text-recognition';
+import { useDispatch, useSelector } from 'react-redux';
+import uuid from 'react-native-uuid';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRoute } from '@react-navigation/native';
+
+
+import { mlkitTranslate } from '../../Util/mlKitTranslate.js';
+
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import * as Clipboard from 'expo-clipboard';
+
+import { AntDesign } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
+import color from '../../Util/color.js';
+import languageList from '../../Util/languageList.js';
+import { googleTranslateApi } from '../../Util/googleTranslateApi.js';
+import { addHistoryItem, setHistoryItems } from '../../store/historySlice.js';
+import TranslationHistoryItem from '../../components/TranslationHistoryItem.js';
+import { setSaved } from '../../store/savedSlice.js';
+import languageListOffline from '../../Util/languageListOffline.js';
+
+import {VISION_API_KEY} from '@env'
+
+
+const retrieveData = () => {
+    return async dispatch => {
+        try {
+            const historyStr = await AsyncStorage.getItem('history');
+            if(historyStr !== null) {
+                const history = JSON.parse(historyStr);
+                dispatch(setHistoryItems({items: history}));
+            }
+            const saveStr = await AsyncStorage.getItem('saved');
+            if(saveStr !== null) {
+                const saved = JSON.parse(historyStr);
+                dispatch(setSaved({items: saved}));
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+}
+export default function Home(props) {
+    console.disableYellowBox = true;// temporarilty disable warning msgs
+
+    const dispatch = useDispatch();
+    const history = useSelector(state => state.history.items);
+    console.log('history:', history);
+    
+    // console.log('Home component params:', props.route.params);
+    // console.log('Home component props:', props);
+    
+    const route = useRoute();
+    // console.log('route:', route.params);
+    const params = props.route.params || {};
+    const [imageUri, setImageUri] = useState(null);
+    const [texts, setTexts] = useState("");
+    const [targetLanguage, setTargetLanguage] = useState("fr");
+    const [shouldTranslate, setShouldTranslate] = useState(false);
+    const [translatedText, setTranslatedText] = useState("");
+    const [enableOfflineMode, setEnableOfflineMode] = useState(false);
+    const [sourceLanguage, setSourceLanguage] = useState("en");
+    const [isTranslating, setIsTranslating] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    // const { addToHistory } = useContext(TranslationContext);
+    useEffect(() => {
+        if (params.targetLanguage) {
+            setTargetLanguage(params.targetLanguage);
+        }
+        if (params.sourceLanguage) {
+            setSourceLanguage(params.sourceLanguage);
+        }
+        // console.log('in HomeScreen, props.targetLanguage: ', params.targetLanguage);
+        // console.log('in HomeScreen, props.sourceLanguage: ', params.sourceLanguage);
+    }, [params.targetLanguage, params.sourceLanguage])
+
+    const toggleOCR = () => {
+      setEnableOfflineMode(!enableOfflineMode);
+    };
+
+    const pickImage = async () => {
+        try {
+            let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4,3],
+            quality: 1,
+        });
+
+        if(!result.canceled) {
+            setImageUri(result.assets[0].uri);
+        }
+        // console.log(result);
+        }catch (error){
+            console.error('Error Picking Image: ', error);
+        }
+    };
+
+    const takePhoto = async () => {
+      try {
+          const permission = await ImagePicker.requestCameraPermissionsAsync();
+          if (permission.granted === false) {
+            alert("You've refused to allow this app to access your photos!");
+          } else {
+            let result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [4, 3],
+              quality: 1,
+            });
+      
+            if (!result.cancelled) {
+              setImageUri(result.uri);
+            }
+            // console.log(result);
+          }
+      } catch (error) {
+        console.error('Error Taking Photo: ', error);
+      }
+    };
+    
+    useEffect(() => {
+        const translateText = async () => {
+                try{
+                    setIsTranslating(true);
+                    setShowModal(true);
+                    let translateResult = '';
+                    if(enableOfflineMode){
+                      translateResult = await mlkitTranslate(texts, sourceLanguage, targetLanguage);
+                      setTranslatedText(translateResult);
+                    //   console.log('tesseract');
+                    }else {
+                        translateResult = await googleTranslateApi(texts, targetLanguage);
+                        setTranslatedText(translateResult);
+                        // console.log('google OCR');
+                    }
+                    //dispatch action
+                    const id = uuid.v4(); //id for translateResult Objects
+                    translateResult.id = id;
+                    const translateResultObj ={
+                        id: id,
+                        translatedText: translateResult,
+                        sourceText: texts,
+                        imageUri: imageUri,
+                    };
+                    dispatch(addHistoryItem({item: translateResultObj}));
+                } catch (error) {
+                    console.error('Error translating text: ', error);
+                    alert('Error translating text. Please try again later');
+                  }finally{
+                    setIsTranslating(false);
+                  }
+                
+                //Save the translation in the history
+                // const translationData = {
+                //     translatedText: translateResult,
+                //     imageUri: imageUri,
+                // };
+                // console.log('translation history: ', translationHistory);
+                // console.log('image uri: ', imageUri);
+                // console.log('translated result: ', translateText);
+                setIsTranslating(false);
+        };
+
+        if (shouldTranslate && targetLanguage && texts && sourceLanguage) {
+        //   console.log('selected language', targetLanguage);
+        //   console.log('text in useEffect IF: ', texts);
+          translateText();
+          setShouldTranslate(false);
+        }
+      }, [shouldTranslate, texts, targetLanguage, sourceLanguage, dispatch]);
+      const closeModal = () => {
+        setShowModal(false);
+    };
+    const handleSubmit = async() => {
+        ()=> isTranslating? undefined : analyzeImage
+    }
+    const copyToClipboard = useCallback(async () => {
+        await Clipboard.setStringAsync(translatedText);
+        alert('Text copied to clipboard');
+    }, [translatedText]);
+
+    useEffect(() => {
+        dispatch(retrieveData());
+    }, [dispatch])
+    // save history to long-term storage
+    useEffect(() => {
+        const saveHistory = async() => {
+            try {
+                await AsyncStorage.setItem('history', JSON.stringify(history));
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        saveHistory();
+    }, [history]);
+    const analyzeImage = async () => {
+        try{
+            if (!imageUri) {
+                alert('Please select an image first');
+                return;
+            }
+            
+            const GoogleCloudVisionApiAnalyze = async() => {
+              // Google Cloud Vision API Key
+              const apiKey = VISION_API_KEY;
+              const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
+
+              //read image from local URI and convert to base64
+              const base64ImageData = await FileSystem.readAsStringAsync(imageUri, {
+                  encoding: FileSystem.EncodingType.Base64,
+              });
+
+              const requestData = {
+                  requests: [
+                      {
+                          image: {
+                              content: base64ImageData,
+                          },
+                          features:{type: 'TEXT_DETECTION'},
+                      },
+                  ],
+              };
+              const apiResponse = await axios.post(apiURL, requestData);
+              const extractedText = apiResponse.data.responses[0].textAnnotations[0].description;
+              return extractedText;
+            };
+
+            //OCR using React-Native-ML-Kit/Text-Recognition
+            const mlAnalyze = async () => {
+            let script;
+              if (sourceLanguage === 'zh') {
+                script = TextRecognitionScript.CHINESE;
+              } else if (sourceLanguage === 'en') {
+                script = TextRecognitionScript.LATIN;
+              } else if (sourceLanguage === 'hi') {
+                script = TextRecognitionScript.DEVANAGARI;
+              }
+              script = script || TextRecognitionScript.LATIN
+              const recognizedText = await TextRecognition.recognize(
+                imageUri, script
+              );
+              return recognizedText;
+            };
+
+            let extractedTextFromGoogle = '';
+            let extractedTextFromMl = [];
+
+            // Choose the OCR engine based on a condition
+            if (enableOfflineMode) {
+              extractedTextFromMl = await mlAnalyze();
+              const fullText = extractedTextFromMl.text;
+            //   console.log('text extracted: ',fullText);
+              setTexts(fullText);
+            //   console.log('Mode: used RNML');
+            } else {
+              extractedTextFromGoogle = await GoogleCloudVisionApiAnalyze();
+              setTexts(extractedTextFromGoogle);
+            //   console.log('Mode: used GCV');
+            }
+            // console.log('textAnnotation: ', extractedText);
+            // console.log('texts: ', texts);
+            setShouldTranslate(true);
+            // console.log('texts', texts);
+            // console.log('translated Text', translatedText);
+
+        } catch(error){
+            console.error('Error analyzing image: ', error);
+            alert('Error analyzing image. Please try again later');
+        }
+    };
+    // console.log('text extracted: ', texts);
+    // console.log('text translated', translatedText);
+    // console.log('offline mode: ', enableOfflineMode);
+
+    return (
+            <ScrollView contentContainerStyle={styles.container}>
+                <View style={styles.languageContainer}>
+                    <TouchableOpacity 
+                    style={styles.languageOptions}
+                    onPress={() => props.navigation.navigate('LanguageOptions', {title: "Source Language Select", selected: sourceLanguage, direction: 'source', appMode: enableOfflineMode})}>
+                        <Text style={styles.languageOptionsContent}>{enableOfflineMode ? languageListOffline[sourceLanguage] : languageList[sourceLanguage]}</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.arrowContainer}>
+                        <AntDesign name="arrowright" size={24} color={color.lightGrey} />
+                    </View>
+
+                    <TouchableOpacity 
+                    style={styles.languageOptions}
+                    onPress={() => props.navigation.navigate('LanguageOptions', {title: "Target Language Select", selected: targetLanguage, direction: 'target', appMode: enableOfflineMode})}>
+                        <Text style={styles.languageOptionsContent}>{enableOfflineMode ? languageListOffline[targetLanguage] : languageList[targetLanguage]}</Text>
+                    </TouchableOpacity>
+                </View> 
+
+            {imageUri && (
+                <Image source={{ uri: imageUri }} style={styles.image} />
+            )}
+
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity onPress={takePhoto} style={styles.button}>
+                    <AntDesign name="camera" size={24} color={color.theme} />
+                    <Text style={styles.buttonText}>Photo</Text>   
+                </TouchableOpacity>
+                <TouchableOpacity onPress={pickImage} style={styles.button}>
+                    <Ionicons name="albums-sharp" size={24} color={color.theme} />
+                    <Text style={styles.buttonText}>Album</Text>
+                </TouchableOpacity>
+            
+                <TouchableOpacity onPress={isTranslating? undefined : analyzeImage} style={styles.button}>
+                    <Ionicons name="arrow-forward-circle-sharp" size={24} color={color.theme} />
+                    <Text style={styles.buttonText}>Translate</Text>
+                </TouchableOpacity>
+            </View>
+
+            <View style={styles.buttonContainer}>
+                <Text style={styles.buttonText}>Offline Mode: {enableOfflineMode ? 'On ' : 'Off '}</Text>
+                <Switch
+                value={enableOfflineMode}
+                onValueChange={toggleOCR}
+                />
+            </View>
+                <Modal visible={showModal} animationType='slide'>
+                    <ScrollView style={styles.modalContainer}>
+                    {isTranslating ? (
+                            <ActivityIndicator size="small" color={color.theme} />
+                        ) : (
+                            <>
+                                
+                                <Text style={styles.modalText}>Original: {texts}</Text>
+                                <View style={styles.resultContainer}>
+                                <Text style={styles.modalText}>Translation: {translatedText}</Text>
+                                    <TouchableOpacity onPress={copyToClipboard} style={styles.iconContainer}>
+                                        <MaterialIcons name="content-copy" size={24} color="black" />
+                                    </TouchableOpacity>
+                                </View>
+                                <Button color={color.theme} title="Close" onPress={closeModal} />
+                            </>
+                        )}
+                    </ScrollView> 
+                </Modal>
+
+            <View style={styles.historyContainer}>
+                <FlatList
+                    data={history.slice().reverse()}//create copy and render in reverse order
+                    renderItem={itemData => {
+                        return <TranslationHistoryItem itemId={itemData.item.id}/>
+                    }}
+                />
+            </View>
+            </ScrollView>
+        
+      );
+
+}
+
+const styles = StyleSheet.create({
+    container: {
+      flexGrow: 1,
+      backgroundColor: '#fff',
+    //   alignItems: 'center',
+      paddingVertical: 40,
+      paddingHorizontal: 20,
+    },
+    languageContainer: {
+        flexDirection: 'row',
+        borderBottomColor: color.lightGrey,
+        borderBottomWidth: 1,
+    },
+    languageOptions: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 15,
+    },
+    arrowContainer: {
+        width: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    languageOptionsContent: {
+        color: color.theme,
+        fontFamily: 'Light',
+        letterSpacing: 0.2
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginBottom: 30,
+      textAlign: 'center',
+    },
+    image: {
+      width: 300,
+      height: 300,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      marginHorizontal: 20,
+      marginBottom: 20,
+      marginTop: 15,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        flex: 1,
+        marginTop: 10,
+        paddingHorizontal:20,
+        paddingVertical: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    button: {
+      backgroundColor: color.lightGrey,
+      marginHorizontal:2,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      height:120,
+      width:120
+    },
+    buttonText: {
+      fontSize: 13,
+      fontFamily: 'Bold',
+      letterSpacing: 0.2,
+      color: color.btnTextColor,
+    },
+    picker: {
+      width: '100%',
+      marginBottom: 20,
+    },
+    resultContainer: {
+        borderBottomColor: color.lightGrey,
+        borderBottomWidth: 1,
+        marginTop: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    label: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+    },
+    modalLabel:{
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    text: {
+      fontSize: 16,
+      fontFamily: 'regular',
+      letterSpacing: 0.2,
+      flex:1,
+      marginBottom: 20,
+      textAlign: 'center',
+    },
+    modalContainer: {
+        borderBottomColor: color.lightGrey,
+        borderBottomWidth: 1,
+        paddingVertical:10,
+        paddingHorizontal:15,
+        marginTop: 10,
+
+    },
+    modalText: {
+        fontSize: 16,
+        fontFamily: 'regular',
+        letterSpacing: 0.2,
+        marginBottom: 20,
+        marginHorizontal: 10,
+        textAlign: 'left',
+        flex:1,
+    },
+    iconContainer:{
+        paddingHorizontal: 2,
+        justifyContent: 'center',
+        alignItems: 'flex-end',
+    },
+    historyContainer:{
+        padding: 10,
+        marginTop: 10,
+        marginHorizontal: 10,
+    },
+  });
+  
