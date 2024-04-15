@@ -352,7 +352,7 @@ export default function Home(props) {
     };
     console.log('text extracted: ', texts);
     console.log('text translated', translatedText);
-    console.log('CER: ', calcCER("A man who went missing in Sham Shui Po has been located. Yip Hing-shing, aged 48, went missing after he was last seen on Ki Lung Street on March 30 afternoon. His family made a report to Police on the same day. The man was located on Lai Chi Kok Road last night (April 2). He sustained no injuries and no suspicious circumstances were detected. Ends/Wednesday, April 3, 2024 Issued at HKT 12:10", "A man who was missing in deep water ingredients was put on. Forty-€ 1 year old man Qingzheng in the afternoon of March 30 afternoon in the corpus of the Christung Street after the closed, the family to the vowillaration. The man was founded last night (April 2) Went Like Treadya. He did not injury, the case has suspicious. Ends / Wednesday, April 3, 2012 (Hong Kong) Hong Kong time 12:10", false, false));
+    // console.log('CER: ', calcCER("A man who went missing in Sham Shui Po has been located. Yip Hing-shing, aged 48, went missing after he was last seen on Ki Lung Street on March 30 afternoon. His family made a report to Police on the same day. The man was located on Lai Chi Kok Road last night (April 2). He sustained no injuries and no suspicious circumstances were detected. Ends/Wednesday, April 3, 2024 Issued at HKT 12:10", "A man who was missing in deep water ingredients was put on. Forty-€ 1 year old man Qingzheng in the afternoon of March 30 afternoon in the corpus of the Christung Street after the closed, the family to the vowillaration. The man was founded last night (April 2) Went Like Treadya. He did not injury, the case has suspicious. Ends / Wednesday, April 3, 2012 (Hong Kong) Hong Kong time 12:10", false, false));
 
     return (
        // <LinearGradient style={styles.container} start={{x:0.5, y:0}} end={{x:0.5, y:1}} locations={[0,0.5,1]} colors={['#764BA2', '#667EEA']}>
@@ -405,7 +405,7 @@ export default function Home(props) {
 
             {/* <TouchableOpacity onPress={}>Save Results</TouchableOpacity> */}
             <View style={styles.buttonContainer}>
-                <Text style={styles.buttonText}>Offline Mode: {shouldUseTesseract ? 'On' : 'Off'}</Text>
+                <Text style={styles.buttonText}>Offline Mode: {shouldUseTesseract ? 'On ' : 'Off '}</Text>
                 <Switch
                 value={shouldUseTesseract}
                 onValueChange={toggleOCR}
@@ -444,7 +444,7 @@ export default function Home(props) {
                                         <MaterialIcons name="content-copy" size={24} color="black" />
                                     </TouchableOpacity>
                                 </View>
-                                <Button title="Close" onPress={closeModal} />
+                                <Button color={color.theme} title="Close" onPress={closeModal} />
                             </>
                         )}
                     </ScrollView> 
@@ -590,6 +590,8 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         marginTop: 10,
         flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
     label: {
       fontSize: 18,
@@ -624,11 +626,12 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         marginHorizontal: 10,
         textAlign: 'left',
+        flex:1,
     },
     iconContainer:{
         paddingHorizontal: 2,
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'flex-end',
     },
     historyContainer:{
         padding: 10,
