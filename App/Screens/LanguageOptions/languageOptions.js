@@ -44,13 +44,6 @@ export default function languageOptions(props) {
         }
     },[mode])
 
-    // const onSelect = useCallback(itemKey => {
-    //     // console.log('direction: ', params.direction);
-    //     const dataKey = params.direction === 'target' ? 'targetLanguage': 'sourceLanguage'; //mode: target or source?
-    //     // console.log('dataKey: ', dataKey);
-    //     navigation.navigate("Home", {[dataKey]: itemKey}); //dataKey: extract the mode: target or source? itemKey: language Item Value, e.g. Chinese
-    //     // console.log('itemKey: ', itemKey);
-    // }, [params, navigation])
 
     const onLanguageSelect = useCallback(itemKey => {
         const dataKey = props.route.params.direction === 'target' ? 'targetLanguage' : 'sourceLanguage';

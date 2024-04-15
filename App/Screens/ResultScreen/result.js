@@ -1,22 +1,3 @@
-// import React, { useCallback } from 'react';
-// import { View, Text, StyleSheet } from 'react-native';
-// import color from '../../Util/color';
-// import * as Clipboard from 'expo-clipboard';
-
-// const Result = ({ translatedText, sourceText }) => {
-//     const copyToClipboard = useCallback(async () => {
-//         await Clipboard.setStringAsync(translatedText);
-//         alert('Text copied to clipboard');
-//     }, [Clipboard])
-//   return (
-//     <View style={styles.resultContainer}>
-//       <Text style={styles.label}>Source Text:</Text>
-//       <Text style={styles.text}>{sourceText}</Text>
-//       <Text style={styles.label}>Translated Text:</Text>
-//       <Text style={styles.text}>{translatedText}</Text>
-//     </View>
-//   );
-// };
 
 import { View, Text, StyleSheet } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';

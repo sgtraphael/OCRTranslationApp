@@ -1,21 +1,15 @@
 import 'react-native-gesture-handler';
 import { StyleSheet, View, Text } from 'react-native';
 import Home from './App/Screens/HomeScreen/home';
-import History from './App/Screens/HistoryScreen/history';
 import Setting  from './App/Screens/SettingScreen/setting';
 import Saved  from './App/Screens/SavedScreen/saved';
 import { NavigationContainer } from '@react-navigation/native';
-import TabNavigation from './App/Navigations/TabNavigation';
-import { TranslationProvider } from './App/Context/Context';
 import * as Font from 'expo-font';
 import { Entypo } from '@expo/vector-icons';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-
-import { AntDesign } from '@expo/vector-icons';
-import { FontAwesome5 } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -136,16 +130,6 @@ export default function App() {
       </NavigationContainer>
     </Provider>
   )
-  // return (
-  //   <View style={styles.container}>
-  //     <TranslationProvider>
-  //       <NavigationContainer>
-  //         <TabNavigation/>
-  //       </NavigationContainer>
-  //     </TranslationProvider>
-  //   </View>
-    
-  // );
 }
 
 const styles = StyleSheet.create({

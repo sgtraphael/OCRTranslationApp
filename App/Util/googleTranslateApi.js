@@ -13,7 +13,6 @@ export const googleTranslateApi = async(texts, targetLanguage) => {
     const apiResponse = await axios.post(apiURL, requestData);
     // console.log("translation: ", apiResponse.data.data.translations);
     // console.log("translated text: ", apiResponse.data.data.translations[0].translatedText);
-    // setTexts(apiResponse.data.data.translations[0].translatedText)
     const translateResult = apiResponse.data.data.translations[0].translatedText;
 
     if(apiResponse.status !== 200){
@@ -21,6 +20,5 @@ export const googleTranslateApi = async(texts, targetLanguage) => {
         throw new Error('Failed to call Google Translate API. Status: '+ apiResponse.status);
     }
     return translateResult;
-    // setTranslatedText(apiResponse.data.data.translations[0].translatedText);
     
   }

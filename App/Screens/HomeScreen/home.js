@@ -1,20 +1,14 @@
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Switch, Settings, ActivityIndicator, Button, Modal, FlatList} from 'react-native'
-import {Picker} from '@react-native-picker/picker'
 import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios';
 import TextRecognition, { TextRecognitionScript } from '@react-native-ml-kit/text-recognition';
-import TranslateText, {TranslateLanguage} from '@react-native-ml-kit/translate-text';
-import { TranslationContext } from '../../Context/Context.js';
-import { useContext } from 'react';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import uuid from 'react-native-uuid';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRoute } from '@react-navigation/native';
 
 
-import History from '../HistoryScreen/history';
-import TabNavigation from '../../Navigations/TabNavigation';
-import { mlTranslate, mlkitTranslate } from '../../Util/mlKitTranslate.js';
+import { mlkitTranslate } from '../../Util/mlKitTranslate.js';
 
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
@@ -26,13 +20,10 @@ import { MaterialIcons } from '@expo/vector-icons';
 import color from '../../Util/color.js';
 import languageList from '../../Util/languageList.js';
 import { googleTranslateApi } from '../../Util/googleTranslateApi.js';
-import Result from '../ResultScreen/result.js';
 import { addHistoryItem, setHistoryItems } from '../../store/historySlice.js';
 import TranslationHistoryItem from '../../components/TranslationHistoryItem.js';
 import { setSaved } from '../../store/savedSlice.js';
-import {LinearGradient} from 'expo-linear-gradient';
 import languageListOffline from '../../Util/languageListOffline.js';
-import calcCER from 'character-error-rate';
 
 import {VISION_API_KEY} from '@env'
 
@@ -136,42 +127,10 @@ export default function Home(props) {
     
     useEffect(() => {
         const translateText = async () => {
-        //   try {
-        //         const GoogleCloudTranslate = async() => {
-        //           const apiURL = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
-              
-        //           const requestData = {
-        //           q: texts,
-        //           target: targetLanguage, // Use the selected target language
-        //           }
-        //           console.log('pass to translate api:', texts);
-        //           const apiResponse = await axios.post(apiURL, requestData);
-        //           console.log("translation: ", apiResponse.data.data.translations);
-        //           console.log("translated text: ", apiResponse.data.data.translations[0].translatedText);
-        //           // setTexts(apiResponse.data.data.translations[0].translatedText)
-        //           const translateResult = apiResponse.data.data.translations[0].translatedText;
-        //           return translateResult;
-        //           // setTranslatedText(apiResponse.data.data.translations[0].translatedText);
-                  
-        //         }
-        //         const mlTranslate = async () => {
-        //           const translateResult = await TranslateText.translate({text: texts, sourceLanguage: sourceLanguage, targetLanguage: targetLanguage,downloadModelIfNeeded: true});
-        //         //   console.log("translated text: ", translateResult);
-        //           return translateResult
-        //         }
-
                 try{
                     setIsTranslating(true);
                     setShowModal(true);
                     let translateResult = '';
-                    // props.navigation.navigate('Result', {
-                    //     screen: 'Result',
-                    //     params:{
-                    //         translatedText: translatedText,
-                    //         sourceText: texts,
-                    //         isTranslating: isTranslating
-                    //     },
-                    //   });
                     if(enableOfflineMode){
                       translateResult = await mlkitTranslate(texts, sourceLanguage, targetLanguage);
                       setTranslatedText(translateResult);
@@ -199,20 +158,14 @@ export default function Home(props) {
                   }
                 
                 //Save the translation in the history
-                const translationData = {
-                    translatedText: translateResult,
-                    imageUri: imageUri,
-                };
-                // addToHistory(translationData);
+                // const translationData = {
+                //     translatedText: translateResult,
+                //     imageUri: imageUri,
+                // };
                 // console.log('translation history: ', translationHistory);
                 // console.log('image uri: ', imageUri);
                 // console.log('translated result: ', translateText);
                 setIsTranslating(false);
-        //   } catch (error) {
-        //     setIsTranslating(false);
-        //     console.error('Error translating text: ', error);
-        //     alert('Error translating text. Please try again later');
-        //   }
         };
 
         if (shouldTranslate && targetLanguage && texts && sourceLanguage) {
@@ -278,32 +231,8 @@ export default function Home(props) {
               const extractedText = apiResponse.data.responses[0].textAnnotations[0].description;
               return extractedText;
             };
-            // Google Cloud Vision API Key
 
-            // //read image from local URI and convert to base64
-            // const base64ImageData = await FileSystem.readAsStringAsync(imageUri, {
-            //     encoding: FileSystem.EncodingType.Base64,
-            // });
-
-            // const requestData = {
-            //     requests: [
-            //         {
-            //             image: {
-            //                 content: base64ImageData,
-            //             },
-            //             features:{type: 'TEXT_DETECTION'},
-            //         },
-            //     ],
-            // };
-            // const apiResponse = await axios.post(apiURL, requestData);
-            // setTexts(apiResponse.data.responses[0].textAnnotations[0].description);
-            // if(targetLanguage) {
-            //     console.log('selected language',  targetLanguage);
-            //     translateText();
-            // }
-            // console.log('response: ', apiResponse.data.responses[0]);
-
-            //OCR using tesseract
+            //OCR using React-Native-ML-Kit/Text-Recognition
             const mlAnalyze = async () => {
             let script;
               if (sourceLanguage === 'zh') {
@@ -335,9 +264,6 @@ export default function Home(props) {
               setTexts(extractedTextFromGoogle);
             //   console.log('Mode: used GCV');
             }
-            
-        
-            // setTexts(extractedText);
             // console.log('textAnnotation: ', extractedText);
             // console.log('texts: ', texts);
             setShouldTranslate(true);
@@ -349,13 +275,11 @@ export default function Home(props) {
             alert('Error analyzing image. Please try again later');
         }
     };
-    console.log('text extracted: ', texts);
-    console.log('text translated', translatedText);
-    console.log('offline mode: ', enableOfflineMode);
-    // console.log('CER: ', calcCER("A man who went missing in Sham Shui Po has been located. Yip Hing-shing, aged 48, went missing after he was last seen on Ki Lung Street on March 30 afternoon. His family made a report to Police on the same day. The man was located on Lai Chi Kok Road last night (April 2). He sustained no injuries and no suspicious circumstances were detected. Ends/Wednesday, April 3, 2024 Issued at HKT 12:10", "A man who was missing in deep water ingredients was put on. Forty-€ 1 year old man Qingzheng in the afternoon of March 30 afternoon in the corpus of the Christung Street after the closed, the family to the vowillaration. The man was founded last night (April 2) Went Like Treadya. He did not injury, the case has suspicious. Ends / Wednesday, April 3, 2012 (Hong Kong) Hong Kong time 12:10", false, false));
+    // console.log('text extracted: ', texts);
+    // console.log('text translated', translatedText);
+    // console.log('offline mode: ', enableOfflineMode);
 
     return (
-       // <LinearGradient style={styles.container} start={{x:0.5, y:0}} end={{x:0.5, y:1}} locations={[0,0.5,1]} colors={['#764BA2', '#667EEA']}>
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.languageContainer}>
                     <TouchableOpacity 
@@ -371,11 +295,10 @@ export default function Home(props) {
                     <TouchableOpacity 
                     style={styles.languageOptions}
                     onPress={() => props.navigation.navigate('LanguageOptions', {title: "Target Language Select", selected: targetLanguage, direction: 'target', appMode: enableOfflineMode})}>
-                        <Text style={styles.languageOptionsContent}>{languageList[targetLanguage]}</Text>
+                        <Text style={styles.languageOptionsContent}>{enableOfflineMode ? languageListOffline[targetLanguage] : languageList[targetLanguage]}</Text>
                     </TouchableOpacity>
                 </View> 
 
-            {/* <TabNavigation translationHistory={translationHistory} /> */}
             {imageUri && (
                 <Image source={{ uri: imageUri }} style={styles.image} />
             )}
@@ -394,16 +317,8 @@ export default function Home(props) {
                     <Ionicons name="arrow-forward-circle-sharp" size={24} color={color.theme} />
                     <Text style={styles.buttonText}>Translate</Text>
                 </TouchableOpacity>
-                {/* <TouchableOpacity onPress={()=> {handleSubmit(); 
-                    props.navigation.navigate('Result', 
-                    {title:'Result', sourceText:texts, translatedText:translatedText, isTranslating:isTranslating}
-                    )}} style={styles.button}>
-                    <Ionicons name="arrow-forward-circle-sharp" size={24} color={color.theme} />
-                    <Text style={styles.buttonText}>Translate</Text>
-                </TouchableOpacity> */}
             </View>
 
-            {/* <TouchableOpacity onPress={}>Save Results</TouchableOpacity> */}
             <View style={styles.buttonContainer}>
                 <Text style={styles.buttonText}>Offline Mode: {enableOfflineMode ? 'On ' : 'Off '}</Text>
                 <Switch
@@ -411,25 +326,6 @@ export default function Home(props) {
                 onValueChange={toggleOCR}
                 />
             </View>
-            {/* {texts.length > 0 && (
-                <View style={styles.resultContainer}>
-                <Text style={styles.label}>Source Text:</Text>
-                <Text style={styles.text}>{texts}</Text>
-        
-                {isTranslating ? (
-                <ActivityIndicator size="small" color={color.theme} />
-                ) : (
-                <>
-                    {translatedText && (
-                    <>
-                        <Text style={styles.label}>Translated Text:</Text>
-                        <Text Text style={styles.text}>{translatedText}</Text>
-                    </>
-                    )}
-                </>
-                )}
-                </View>
-            )} */}
                 <Modal visible={showModal} animationType='slide'>
                     <ScrollView style={styles.modalContainer}>
                     {isTranslating ? (
@@ -450,10 +346,6 @@ export default function Home(props) {
                     </ScrollView> 
                 </Modal>
 
-                {/* {translatedText.length > 0 && (
-                    <Result translatedText={translatedText} sourceText={texts} />
-                )} */}
-
             <View style={styles.historyContainer}>
                 <FlatList
                     data={history.slice().reverse()}//create copy and render in reverse order
@@ -462,28 +354,6 @@ export default function Home(props) {
                     }}
                 />
             </View>
-            {/* {shouldUseTesseract && (
-                <Picker
-                selectedValue={sourceLanguage}
-                style={styles.picker}
-                onValueChange={(itemValue, itemIndex) => setSourceLanguage(itemValue)}
-                >
-                <Picker.Item label="Select source language" value="" />
-                <Picker.Item label="English" value="en" />
-                </Picker>
-            )}
-            <Picker
-                selectedValue={targetLanguage}
-                style={styles.picker}
-                onValueChange={(itemValue, itemIndex) => setTargetLanguage(itemValue)}
-            >
-                <Picker.Item label="Select target language" value="" />
-                <Picker.Item label="Spanish" value="es" />
-                <Picker.Item label="French" value="fr" />
-                <Picker.Item label="German" value="de" />
-                <Picker.Item label="Chinese" value="zh" />
-            </Picker> */}
-
             </ScrollView>
         
       );
